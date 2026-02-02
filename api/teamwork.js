@@ -1,8 +1,5 @@
-// api/teamwork.js - Vercel Serverless Function
-// This proxies requests to Teamwork API to avoid CORS issues
-
-export default async function handler(req, res) {
-  // Set CORS headers
+module.exports = async function handler(req, res) {
+  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -13,7 +10,7 @@ export default async function handler(req, res) {
 
   // Your Teamwork credentials
   const TEAMWORK_URL = 'https://9cloudwebworks.teamwork.com';
-  const API_KEY = 'twp_kouI7Vd8IetzZ1b88Y7L8vf6Xm0K';
+  const API_KEY = process.env.TEAMWORK_API_KEY || 'twp_kouI7Vd8IetzZ1b88Y7L8vf6Xm0K';
 
   const { endpoint } = req.query;
 
@@ -21,7 +18,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing endpoint parameter' });
   }
 
-  // Whitelist allowed endpoints for security
+  // Whitelist allowed endpoints
   const allowedEndpoints = ['projects.json', 'people.json', 'tasks.json', 'time_entries.json'];
   const baseEndpoint = endpoint.split('?')[0];
   
@@ -46,6 +43,9 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
+    
+    // Cache for 60 seconds
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
     return res.status(200).json(data);
 
   } catch (error) {
