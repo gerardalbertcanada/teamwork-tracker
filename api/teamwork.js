@@ -1,3 +1,5 @@
+const https = require('https');
+
 module.exports = async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -9,7 +11,7 @@ module.exports = async function handler(req, res) {
   }
 
   // Your Teamwork credentials
-  const TEAMWORK_URL = 'https://9cloudwebworks.teamwork.com';
+  const TEAMWORK_SITE = '9cloudwebworks.teamwork.com';
   const API_KEY = process.env.TEAMWORK_API_KEY || 'twp_kouI7Vd8IetzZ1b88Y7L8vf6Xm0K';
 
   const { endpoint } = req.query;
@@ -26,30 +28,44 @@ module.exports = async function handler(req, res) {
     return res.status(403).json({ error: 'Endpoint not allowed' });
   }
 
-  try {
-    const url = `${TEAMWORK_URL}/${endpoint}`;
+  return new Promise((resolve) => {
     const auth = Buffer.from(`${API_KEY}:xxx`).toString('base64');
-
-    const response = await fetch(url, {
+    
+    const options = {
+      hostname: TEAMWORK_SITE,
+      port: 443,
+      path: '/' + endpoint,
       method: 'GET',
       headers: {
         'Authorization': `Basic ${auth}`,
         'Content-Type': 'application/json'
       }
+    };
+
+    const request = https.request(options, (response) => {
+      let data = '';
+      
+      response.on('data', (chunk) => {
+        data += chunk;
+      });
+      
+      response.on('end', () => {
+        try {
+          const jsonData = JSON.parse(data);
+          res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
+          res.status(200).json(jsonData);
+        } catch (e) {
+          res.status(500).json({ error: 'Failed to parse response', details: data.substring(0, 200) });
+        }
+        resolve();
+      });
     });
 
-    if (!response.ok) {
-      throw new Error(`Teamwork API error: ${response.status}`);
-    }
+    request.on('error', (error) => {
+      res.status(500).json({ error: error.message });
+      resolve();
+    });
 
-    const data = await response.json();
-    
-    // Cache for 60 seconds
-    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
-    return res.status(200).json(data);
-
-  } catch (error) {
-    console.error('Teamwork API Error:', error);
-    return res.status(500).json({ error: error.message });
-  }
-}
+    request.end();
+  });
+};
