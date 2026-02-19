@@ -1,450 +1,766 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>9Cloud Teamwork Dashboard</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☁️</text></svg>">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js" crossorigin></script>
-  <script src="https://unpkg.com/recharts@2.5.0/umd/Recharts.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>9Cloud — Teamwork Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'DM Sans', system-ui, sans-serif; }
-    .dashboard { min-height: 100vh; background: linear-gradient(135deg, #0c1222 0%, #1a1f35 100%); color: #e2e8f0; }
-    
-    .header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding: 20px 32px; position: sticky; top: 0; z-index: 100; }
-    .header-content { display: flex; justify-content: space-between; align-items: center; max-width: 1600px; margin: 0 auto; flex-wrap: wrap; gap: 16px; }
-    .logo-section { display: flex; align-items: center; gap: 16px; }
-    .logo { width: 48px; height: 48px; background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-    .title { font-size: 24px; font-weight: 700; background: linear-gradient(90deg, #06b6d4, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .subtitle { color: #64748b; font-size: 13px; margin-top: 2px; }
-    .header-stats { display: flex; gap: 12px; align-items: center; }
-    .stat-badge { display: flex; flex-direction: column; align-items: center; padding: 10px 18px; background: rgba(99, 102, 241, 0.1); border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.2); }
-    .stat-number { font-size: 22px; font-weight: 700; color: #06b6d4; }
-    .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
-    
-    .main-content { max-width: 1600px; margin: 0 auto; padding: 24px 32px; }
-    
-    .filters-card { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(99, 102, 241, 0.15); padding: 24px; margin-bottom: 24px; }
-    .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-    .filter-group { display: flex; flex-direction: column; gap: 10px; }
-    .filter-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-    .toggle-group { display: flex; background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 4px; border: 1px solid rgba(99, 102, 241, 0.1); }
-    .toggle-btn { flex: 1; padding: 12px 20px; border: none; border-radius: 10px; background: transparent; color: #64748b; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease; font-family: inherit; }
-    .toggle-btn:hover { color: #e2e8f0; }
-    .toggle-btn.active { background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%); color: white; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3); }
-    .select { padding: 12px 16px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; color: #e2e8f0; font-size: 14px; cursor: pointer; outline: none; width: 100%; font-family: inherit; transition: all 0.2s; }
-    .select:hover, .select:focus { border-color: #06b6d4; }
-    .select option { background: #1e293b; color: #e2e8f0; }
-    .date-inputs { display: flex; align-items: center; gap: 8px; }
-    .date-input { flex: 1; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; color: #e2e8f0; font-size: 13px; outline: none; font-family: inherit; }
-    .date-input:hover, .date-input:focus { border-color: #06b6d4; }
-    .date-separator { color: #64748b; font-size: 12px; }
-    
-    .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
-    @media (max-width: 1200px) { .stats-row { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 768px) { .stats-row { grid-template-columns: repeat(2, 1fr); } .header-content { justify-content: center; text-align: center; } .logo-section { flex-direction: column; } }
-    .stats-card { display: flex; align-items: center; gap: 16px; padding: 20px; background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(99, 102, 241, 0.1); transition: all 0.3s ease; }
-    .stats-card:hover { transform: translateY(-2px); border-color: rgba(99, 102, 241, 0.3); }
-    .stats-card.cyan { border-left: 4px solid #06b6d4; }
-    .stats-card.green { border-left: 4px solid #10b981; }
-    .stats-card.amber { border-left: 4px solid #f59e0b; }
-    .stats-card.red { border-left: 4px solid #ef4444; }
-    .stats-card.purple { border-left: 4px solid #8b5cf6; }
-    .stats-icon { font-size: 32px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
-    .stats-value { font-size: 32px; font-weight: 700; color: #f1f5f9; }
-    .stats-label { font-size: 12px; color: #64748b; margin-top: 2px; }
-    
-    .content-grid { display: grid; grid-template-columns: 1fr 420px; gap: 24px; }
-    @media (max-width: 1100px) { .content-grid { grid-template-columns: 1fr; } }
-    
-    .card { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(99, 102, 241, 0.1); padding: 24px; }
-    .card-title { font-size: 16px; font-weight: 600; color: #f1f5f9; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
-    .task-count { font-size: 11px; padding: 4px 12px; background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%); color: white; border-radius: 20px; font-weight: 600; }
-    
-    .chart-container { height: 380px; }
-    .chart-legend { display: flex; justify-content: center; gap: 24px; margin-top: 16px; flex-wrap: wrap; }
-    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #94a3b8; }
-    .legend-dot { width: 12px; height: 12px; border-radius: 4px; }
-    
-    .task-list { display: flex; flex-direction: column; gap: 12px; max-height: 440px; overflow-y: auto; padding-right: 8px; }
-    .task-list::-webkit-scrollbar { width: 6px; }
-    .task-list::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.3); border-radius: 3px; }
-    .task-list::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 3px; }
-    .task-item { padding: 16px; background: rgba(15, 23, 42, 0.4); border-radius: 14px; border: 1px solid rgba(99, 102, 241, 0.1); transition: all 0.2s ease; }
-    .task-item:hover { border-color: rgba(99, 102, 241, 0.3); transform: translateX(4px); }
-    .task-header { display: flex; align-items: flex-start; gap: 12px; }
-    .task-status { width: 24px; height: 24px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; flex-shrink: 0; font-weight: 600; }
-    .task-status.complete { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-    .task-status.overdue { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-    .task-status.active { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-    .task-name { font-size: 14px; font-weight: 500; color: #f1f5f9; line-height: 1.5; }
-    .task-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; padding-left: 36px; }
-    .task-project { font-size: 11px; color: #06b6d4; background: rgba(6, 182, 212, 0.15); padding: 4px 10px; border-radius: 8px; font-weight: 500; }
-    .task-assignee, .task-due { font-size: 12px; color: #94a3b8; }
-    .no-data { display: flex; align-items: center; justify-content: center; height: 200px; color: #64748b; font-size: 14px; }
-    
-    .footer { text-align: center; padding: 24px; color: #475569; font-size: 13px; border-top: 1px solid rgba(99, 102, 241, 0.1); margin-top: 32px; }
-    .footer span { color: #06b6d4; }
-    
-    .pie-section { display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 24px; }
-    .pie-container { width: 140px; height: 140px; }
-    .pie-legend { display: flex; flex-direction: column; gap: 8px; }
-    .pie-legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #94a3b8; }
-    .pie-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
-    
-    .loading-container { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #0c1222 0%, #1a1f35 100%); color: #94a3b8; }
-    .spinner { width: 56px; height: 56px; border: 4px solid rgba(99, 102, 241, 0.2); border-top: 4px solid #06b6d4; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .loading-text { font-size: 16px; color: #94a3b8; }
-    
-    .error-container { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #0c1222 0%, #1a1f35 100%); color: #f1f5f9; text-align: center; padding: 24px; }
-    .error-icon { font-size: 56px; margin-bottom: 20px; }
-    .error-title { color: #ef4444; font-size: 24px; margin-bottom: 12px; }
-    .error-text { color: #94a3b8; max-width: 500px; line-height: 1.6; margin-bottom: 8px; }
-    .retry-btn { margin-top: 24px; padding: 14px 32px; background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; transition: transform 0.2s, box-shadow 0.2s; }
-    .retry-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(6, 182, 212, 0.3); }
-    
-    .refresh-btn { padding: 10px 20px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 10px; color: #06b6d4; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
-    .refresh-btn:hover { background: rgba(99, 102, 241, 0.2); }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #0f1117;
+      --bg-secondary: #161820;
+      --bg-card: #1c1e28;
+      --bg-card-hover: #22242f;
+      --border: #2a2d3a;
+      --border-light: #333649;
+      --text-primary: #e8eaed;
+      --text-secondary: #9ca0b0;
+      --text-muted: #6b7084;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --accent-subtle: rgba(59, 130, 246, 0.1);
+      --green: #22c55e;
+      --green-subtle: rgba(34, 197, 94, 0.12);
+      --amber: #f59e0b;
+      --amber-subtle: rgba(245, 158, 11, 0.12);
+      --red: #ef4444;
+      --red-subtle: rgba(239, 68, 68, 0.12);
+      --purple: #a78bfa;
+      --purple-subtle: rgba(167, 139, 250, 0.1);
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ─── HEADER ─── */
+    .header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; color: #fff;
+    }
+    .header-title { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+    .header-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-family: inherit; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn:hover { background: var(--bg-card-hover); border-color: var(--border-light); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn.loading { opacity: 0.6; pointer-events: none; }
+
+    /* ─── STATUS BAR ─── */
+    .status-bar {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 32px;
+      display: flex; align-items: center; gap: 20px;
+      font-size: 12px; color: var(--text-muted);
+    }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green); display: inline-block; margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+    .status-dot.error { background: var(--red); animation: none; }
+    .status-dot.loading { background: var(--amber); }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .stat-chip {
+      background: var(--bg-card);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    /* ─── LAYOUT ─── */
+    .main { padding: 24px 32px; max-width: 1440px; margin: 0 auto; }
+
+    /* ─── FILTERS ─── */
+    .filters-bar {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 4px; }
+    .filter-label {
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .filter-select, .filter-date {
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-family: inherit; font-size: 13px;
+      min-width: 180px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .filter-select:hover, .filter-date:hover { border-color: var(--border-light); }
+    .filter-select:focus, .filter-date:focus { border-color: var(--accent); outline: none; }
+    .filter-date { min-width: 150px; }
+    .filter-date::-webkit-calendar-picker-indicator { filter: invert(0.7); }
+    .filter-reset {
+      align-self: flex-end;
+      font-size: 12px; color: var(--accent);
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; padding: 8px 4px;
+    }
+    .filter-reset:hover { text-decoration: underline; }
+
+    /* ─── VIEW TOGGLE ─── */
+    .view-toggle {
+      display: flex; align-items: center;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); overflow: hidden;
+      margin-left: auto;
+    }
+    .view-toggle button {
+      padding: 7px 14px; border: none; background: none;
+      color: var(--text-muted); font-family: inherit; font-size: 12px;
+      font-weight: 500; cursor: pointer; transition: all 0.15s;
+    }
+    .view-toggle button.active {
+      background: var(--accent-subtle); color: var(--accent);
+    }
+
+    /* ─── CHART SECTION ─── */
+    .chart-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .chart-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .chart-title { font-size: 14px; font-weight: 600; }
+    .chart-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ─── STAFF SECTIONS ─── */
+    .staff-section {
+      margin-bottom: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .staff-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .staff-header:hover { background: var(--bg-card-hover); }
+    .staff-info { display: flex; align-items: center; gap: 12px; }
+    .staff-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; color: #fff;
+      flex-shrink: 0;
+    }
+    .staff-name { font-weight: 600; font-size: 14px; }
+    .staff-badges { display: flex; gap: 8px; align-items: center; }
+    .badge {
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-total { background: var(--accent-subtle); color: var(--accent); }
+    .badge-complete { background: var(--green-subtle); color: var(--green); }
+    .badge-overdue { background: var(--red-subtle); color: var(--red); }
+    .badge-active { background: var(--amber-subtle); color: var(--amber); }
+    .collapse-icon {
+      color: var(--text-muted); font-size: 18px;
+      transition: transform 0.2s;
+    }
+    .collapse-icon.collapsed { transform: rotate(-90deg); }
+
+    /* ─── TASK TABLE ─── */
+    .task-table { width: 100%; border-collapse: collapse; }
+    .task-table th {
+      text-align: left; padding: 10px 20px;
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-primary);
+    }
+    .task-table td {
+      padding: 10px 20px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(42, 45, 58, 0.5);
+      vertical-align: top;
+    }
+    .task-table tr:last-child td { border-bottom: none; }
+    .task-table tr:hover td { background: rgba(59, 130, 246, 0.03); }
+
+    .task-name-cell { max-width: 400px; }
+    .task-title { font-weight: 500; color: var(--text-primary); }
+    .task-project-tag {
+      display: inline-block; margin-top: 4px;
+      font-size: 11px; color: var(--purple);
+      background: var(--purple-subtle);
+      padding: 2px 8px; border-radius: 4px;
+    }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 12px; font-weight: 500;
+    }
+    .status-complete { background: var(--green-subtle); color: var(--green); }
+    .status-active { background: var(--accent-subtle); color: var(--accent); }
+    .status-overdue { background: var(--red-subtle); color: var(--red); }
+
+    .date-cell { white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+    .date-overdue { color: var(--red); }
+    .date-upcoming { color: var(--amber); }
+    .date-ok { color: var(--text-secondary); }
+    .no-date { color: var(--text-muted); font-style: italic; font-family: 'DM Sans', sans-serif; }
+
+    .priority-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      display: inline-block;
+    }
+    .priority-high { background: var(--red); }
+    .priority-medium { background: var(--amber); }
+    .priority-low { background: var(--green); }
+    .priority-none { background: var(--text-muted); }
+
+    /* ─── LOADING / EMPTY ─── */
+    .loading-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 80px 20px; gap: 16px;
+    }
+    .spinner {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 14px; color: var(--text-muted); }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: var(--text-muted); font-size: 14px;
+    }
+
+    .error-banner {
+      background: var(--red-subtle);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      color: var(--red);
+      font-size: 13px;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .header, .status-bar, .main { padding-left: 16px; padding-right: 16px; }
+      .filters-bar { flex-direction: column; align-items: stretch; }
+      .filter-select, .filter-date { min-width: 100%; }
+      .view-toggle { margin-left: 0; }
+      .task-table { font-size: 12px; }
+      .task-table th, .task-table td { padding: 8px 12px; }
+      .task-name-cell { max-width: 200px; }
+    }
   </style>
 </head>
 <body>
   <div id="root"></div>
 
+  <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/prop-types@15/prop-types.min.js"></script>
+  <script crossorigin src="https://unpkg.com/recharts@2.1.16/umd/Recharts.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
   <script type="text/babel">
-    const { useState, useEffect, useMemo } = React;
-    const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } = Recharts;
+    const { useState, useEffect, useMemo, useCallback } = React;
+    const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } = Recharts;
 
-    const COLORS = ['#06b6d4', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#ec4899', '#6366f1', '#14b8a6', '#84cc16', '#f97316'];
+    const API_BASE = '/api/teamwork';
 
-    // API fetch function - calls our serverless function
-    const fetchTeamworkData = async (endpoint) => {
-      const response = await fetch(`/api/teamwork?endpoint=${encodeURIComponent(endpoint)}`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API Error: ${response.status} - ${errorText}`);
+    // ─── Helpers ───
+    function api(endpoint, params = {}) {
+      const query = new URLSearchParams({ endpoint, ...params });
+      return fetch(`${API_BASE}?${query}`).then(r => {
+        if (!r.ok) throw new Error(`API ${r.status}`);
+        return r.json();
+      });
+    }
+
+    function parseDate(str) {
+      if (!str) return null;
+      // Teamwork returns YYYYMMDD or YYYY-MM-DD
+      const clean = str.replace(/-/g, '');
+      if (clean.length === 8) {
+        return new Date(clean.slice(0,4), parseInt(clean.slice(4,6))-1, clean.slice(6,8));
       }
-      return response.json();
-    };
+      return new Date(str);
+    }
 
-    function TeamworkDashboard() {
-      const [data, setData] = useState({ projects: [], people: [], tasks: [], timeEntries: [] });
+    function formatDate(d) {
+      if (!d) return null;
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function isOverdue(task) {
+      if (task.completed) return false;
+      if (!task['due-date']) return false;
+      const due = parseDate(task['due-date']);
+      return due && due < new Date();
+    }
+
+    function isUpcomingSoon(task) {
+      if (task.completed || !task['due-date']) return false;
+      const due = parseDate(task['due-date']);
+      const now = new Date();
+      const threeDays = new Date(now.getTime() + 3 * 86400000);
+      return due && due >= now && due <= threeDays;
+    }
+
+    function getTaskStatus(task) {
+      if (task.completed) return 'complete';
+      if (isOverdue(task)) return 'overdue';
+      return 'active';
+    }
+
+    function getInitials(name) {
+      return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    const COLORS = ['#3b82f6', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#6366f1'];
+
+    // ─── App ───
+    function App() {
+      const [tasks, setTasks] = useState([]);
+      const [projects, setProjects] = useState([]);
       const [loading, setLoading] = useState(true);
       const [error, setError] = useState(null);
       const [lastUpdated, setLastUpdated] = useState(null);
-      
-      const [viewMode, setViewMode] = useState('staff');
-      const [selectedProject, setSelectedProject] = useState('all');
-      const [selectedStaff, setSelectedStaff] = useState('all');
-      const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
-      const loadData = async () => {
+      // Filters
+      const [filterProject, setFilterProject] = useState('all');
+      const [filterDateFrom, setFilterDateFrom] = useState('');
+      const [filterDateTo, setFilterDateTo] = useState('');
+      const [viewMode, setViewMode] = useState('table'); // table | chart
+
+      // Collapse state
+      const [collapsedStaff, setCollapsedStaff] = useState({});
+
+      const fetchData = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-          const [projectsData, peopleData, tasksData, timeData] = await Promise.all([
-            fetchTeamworkData('projects.json'),
-            fetchTeamworkData('people.json'),
-            fetchTeamworkData('tasks.json?pageSize=500'),
-            fetchTeamworkData('time_entries.json?pageSize=500')
+          // Fetch tasks (page through if needed) and projects
+          const [tasksRes, projectsRes] = await Promise.all([
+            api('tasks.json', { 'page': '1', 'pageSize': '250', 'includeCompletedTasks': 'true' }),
+            api('projects.json', { status: 'active' }),
           ]);
 
-          setData({
-            projects: projectsData.projects || [],
-            people: (peopleData.people || []).filter(p => p['user-type'] !== 'contact'),
-            tasks: tasksData['todo-items'] || [],
-            timeEntries: timeData['time-entries'] || []
-          });
+          const allTasks = (tasksRes['todo-items'] || []);
+          const allProjects = (projectsRes.projects || []);
+
+          setTasks(allTasks);
+          setProjects(allProjects);
           setLastUpdated(new Date());
-          setLoading(false);
         } catch (err) {
-          console.error('Error loading data:', err);
           setError(err.message);
+        } finally {
           setLoading(false);
         }
+      }, []);
+
+      useEffect(() => { fetchData(); }, [fetchData]);
+
+      // ─── Filtering ───
+      const filteredTasks = useMemo(() => {
+        return tasks.filter(task => {
+          // Project filter
+          if (filterProject !== 'all' && String(task['project-id']) !== filterProject) return false;
+
+          // Date filter
+          if (filterDateFrom || filterDateTo) {
+            const due = parseDate(task['due-date']);
+            if (!due) return false;
+            if (filterDateFrom && due < new Date(filterDateFrom)) return false;
+            if (filterDateTo && due > new Date(filterDateTo + 'T23:59:59')) return false;
+          }
+
+          return true;
+        });
+      }, [tasks, filterProject, filterDateFrom, filterDateTo]);
+
+      // ─── Group by Staff ───
+      const staffGroups = useMemo(() => {
+        const groups = {};
+        filteredTasks.forEach(task => {
+          const name = task['responsible-party-summary'] || 'Unassigned';
+          if (!groups[name]) groups[name] = [];
+          groups[name].push(task);
+        });
+
+        // Sort by number of tasks descending
+        return Object.entries(groups)
+          .sort((a, b) => b[1].length - a[1].length)
+          .map(([name, tasks]) => ({
+            name,
+            tasks: tasks.sort((a, b) => {
+              // Sort: overdue first, then by due date
+              const aOverdue = isOverdue(a) ? 0 : 1;
+              const bOverdue = isOverdue(b) ? 0 : 1;
+              if (aOverdue !== bOverdue) return aOverdue - bOverdue;
+              const aDate = parseDate(a['due-date']);
+              const bDate = parseDate(b['due-date']);
+              if (!aDate && !bDate) return 0;
+              if (!aDate) return 1;
+              if (!bDate) return -1;
+              return aDate - bDate;
+            }),
+            total: tasks.length,
+            complete: tasks.filter(t => t.completed).length,
+            overdue: tasks.filter(t => isOverdue(t)).length,
+            active: tasks.filter(t => !t.completed && !isOverdue(t)).length,
+          }));
+      }, [filteredTasks]);
+
+      // ─── Chart Data ───
+      const barChartData = useMemo(() => {
+        return staffGroups.map(g => ({
+          name: g.name.length > 14 ? g.name.slice(0, 12) + '…' : g.name,
+          fullName: g.name,
+          Active: g.active,
+          Overdue: g.overdue,
+          Complete: g.complete,
+        }));
+      }, [staffGroups]);
+
+      const statusTotals = useMemo(() => {
+        const complete = filteredTasks.filter(t => t.completed).length;
+        const overdue = filteredTasks.filter(t => isOverdue(t)).length;
+        const active = filteredTasks.length - complete - overdue;
+        return [
+          { name: 'Active', value: active, color: '#3b82f6' },
+          { name: 'Complete', value: complete, color: '#22c55e' },
+          { name: 'Overdue', value: overdue, color: '#ef4444' },
+        ].filter(s => s.value > 0);
+      }, [filteredTasks]);
+
+      // ─── Project list for filter ───
+      const projectOptions = useMemo(() => {
+        const seen = {};
+        tasks.forEach(t => {
+          if (t['project-id'] && t['project-name']) {
+            seen[t['project-id']] = t['project-name'];
+          }
+        });
+        return Object.entries(seen).sort((a, b) => a[1].localeCompare(b[1]));
+      }, [tasks]);
+
+      const toggleCollapse = (name) => {
+        setCollapsedStaff(prev => ({ ...prev, [name]: !prev[name] }));
       };
 
-      useEffect(() => { loadData(); }, []);
+      const resetFilters = () => {
+        setFilterProject('all');
+        setFilterDateFrom('');
+        setFilterDateTo('');
+      };
 
-      const { projects, people, tasks, timeEntries } = data;
+      const hasActiveFilters = filterProject !== 'all' || filterDateFrom || filterDateTo;
 
-      const filteredTasks = useMemo(() => tasks.filter(task => {
-        if (selectedProject !== 'all' && String(task['project-id']) !== selectedProject) return false;
-        if (selectedStaff !== 'all' && !(task['responsible-party-ids'] || '').includes(selectedStaff)) return false;
-        if (dateRange.start && task['due-date']) {
-          const dueDate = new Date(task['due-date'].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'));
-          if (dueDate < new Date(dateRange.start)) return false;
-        }
-        if (dateRange.end && task['due-date']) {
-          const dueDate = new Date(task['due-date'].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'));
-          if (dueDate > new Date(dateRange.end)) return false;
-        }
-        return true;
-      }), [tasks, selectedProject, selectedStaff, dateRange]);
-
-      const filteredTimeEntries = useMemo(() => timeEntries.filter(entry => {
-        if (selectedProject !== 'all' && String(entry['project-id']) !== selectedProject) return false;
-        if (selectedStaff !== 'all' && entry['person-id'] !== selectedStaff) return false;
-        return true;
-      }), [timeEntries, selectedProject, selectedStaff]);
-
-      const workloadData = useMemo(() => {
-        if (viewMode === 'staff') {
-          const staffData = {};
-          people.forEach(person => {
-            staffData[person.id] = { name: person['first-name'], fullName: person['full-name'], tasks: 0, hours: 0 };
-          });
-          filteredTasks.forEach(task => {
-            const ids = (task['responsible-party-ids'] || '').split(',');
-            ids.forEach(id => { if (staffData[id]) staffData[id].tasks++; });
-          });
-          filteredTimeEntries.forEach(entry => {
-            if (staffData[entry['person-id']]) staffData[entry['person-id']].hours += parseFloat(entry.hoursDecimal) || 0;
-          });
-          return Object.values(staffData).filter(d => d.tasks > 0 || d.hours > 0).sort((a, b) => b.hours - a.hours);
-        } else {
-          const projectData = {};
-          projects.forEach(proj => {
-            projectData[proj.id] = { name: proj.name?.length > 25 ? proj.name.substring(0, 25) + '...' : proj.name, fullName: proj.name, tasks: 0, hours: 0 };
-          });
-          filteredTasks.forEach(task => {
-            const projId = String(task['project-id']);
-            if (projectData[projId]) projectData[projId].tasks++;
-          });
-          filteredTimeEntries.forEach(entry => {
-            const projId = String(entry['project-id']);
-            if (projectData[projId]) projectData[projId].hours += parseFloat(entry.hoursDecimal) || 0;
-          });
-          return Object.values(projectData).filter(d => d.tasks > 0 || d.hours > 0).sort((a, b) => b.hours - a.hours).slice(0, 12);
-        }
-      }, [viewMode, people, projects, filteredTasks, filteredTimeEntries]);
-
-      const tasksByStatus = useMemo(() => ({
-        completed: filteredTasks.filter(t => t.completed).length,
-        active: filteredTasks.filter(t => !t.completed).length,
-        overdue: filteredTasks.filter(t => {
-          if (!t['due-date'] || t.completed) return false;
-          const due = new Date(t['due-date'].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'));
-          return due < new Date();
-        }).length
-      }), [filteredTasks]);
-
-      const totalHours = filteredTimeEntries.reduce((sum, e) => sum + (parseFloat(e.hoursDecimal) || 0), 0);
-
-      const pieData = [
-        { name: 'Completed', value: tasksByStatus.completed, color: '#10b981' },
-        { name: 'Active', value: tasksByStatus.active - tasksByStatus.overdue, color: '#f59e0b' },
-        { name: 'Overdue', value: tasksByStatus.overdue, color: '#ef4444' }
-      ].filter(d => d.value > 0);
-
-      if (loading) {
+      // ─── Custom Tooltip ───
+      const CustomTooltip = ({ active, payload, label }) => {
+        if (!active || !payload?.length) return null;
+        const data = payload[0]?.payload;
         return (
-          <div className="loading-container">
-            <div className="spinner"></div>
-            <p className="loading-text">Connecting to Teamwork...</p>
+          <div style={{
+            background: '#1c1e28', border: '1px solid #2a2d3a',
+            borderRadius: '8px', padding: '12px 16px', fontSize: '13px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
+          }}>
+            <div style={{ fontWeight: 600, marginBottom: 6 }}>{data?.fullName || label}</div>
+            {payload.map((p, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.color, display: 'inline-block' }} />
+                <span style={{ color: '#9ca0b0' }}>{p.name}:</span>
+                <span style={{ fontWeight: 600 }}>{p.value}</span>
+              </div>
+            ))}
           </div>
         );
-      }
-
-      if (error) {
-        return (
-          <div className="error-container">
-            <div className="error-icon">⚠️</div>
-            <h2 className="error-title">Connection Error</h2>
-            <p className="error-text">{error}</p>
-            <p className="error-text" style={{fontSize: '13px', marginTop: '12px'}}>Make sure the API function is deployed correctly in /api/teamwork.js</p>
-            <button className="retry-btn" onClick={loadData}>🔄 Try Again</button>
-          </div>
-        );
-      }
+      };
 
       return (
-        <div className="dashboard">
+        <div>
+          {/* Header */}
           <header className="header">
-            <div className="header-content">
-              <div className="logo-section">
-                <div className="logo">☁️</div>
-                <div>
-                  <h1 className="title">9Cloud Teamwork Dashboard</h1>
-                  <p className="subtitle">Task & Time Tracking Overview</p>
-                </div>
+            <div className="header-left">
+              <div className="logo">9C</div>
+              <div>
+                <div className="header-title">Teamwork Dashboard</div>
+                <div className="header-subtitle">Tasks by Staff</div>
               </div>
-              <div className="header-stats">
-                <div className="stat-badge">
-                  <span className="stat-number">{projects.length}</span>
-                  <span className="stat-label">Projects</span>
-                </div>
-                <div className="stat-badge">
-                  <span className="stat-number">{people.length}</span>
-                  <span className="stat-label">Staff</span>
-                </div>
-                <button className="refresh-btn" onClick={loadData}>🔄 Refresh</button>
-              </div>
+            </div>
+            <div className="header-actions">
+              <button className={`btn btn-primary ${loading ? 'loading' : ''}`} onClick={fetchData}>
+                ↻ Refresh
+              </button>
             </div>
           </header>
 
-          <div className="main-content">
-            <div className="filters-card">
-              <div className="filters-grid">
-                <div className="filter-group">
-                  <label className="filter-label">View By</label>
-                  <div className="toggle-group">
-                    <button className={`toggle-btn ${viewMode === 'project' ? 'active' : ''}`} onClick={() => setViewMode('project')}>📁 Project</button>
-                    <button className={`toggle-btn ${viewMode === 'staff' ? 'active' : ''}`} onClick={() => setViewMode('staff')}>👤 Staff</button>
-                  </div>
-                </div>
+          {/* Status Bar */}
+          <div className="status-bar">
+            <span>
+              <span className={`status-dot ${error ? 'error' : loading ? 'loading' : ''}`} />
+              {error ? 'Connection error' : loading ? 'Loading…' : 'Connected'}
+            </span>
+            {!loading && !error && (
+              <>
+                <span className="stat-chip">{filteredTasks.length} tasks</span>
+                <span className="stat-chip">{staffGroups.length} staff</span>
+                <span className="stat-chip">{projectOptions.length} projects</span>
+                {lastUpdated && <span>Updated {lastUpdated.toLocaleTimeString()}</span>}
+              </>
+            )}
+          </div>
 
-                <div className="filter-group">
-                  <label className="filter-label">Project</label>
-                  <select className="select" value={selectedProject} onChange={(e) => setSelectedProject(e.target.value)}>
-                    <option value="all">All Projects</option>
-                    {projects.filter(p => p.status === 'active').map(proj => (
-                      <option key={proj.id} value={proj.id}>{proj.name}</option>
-                    ))}
-                  </select>
-                </div>
+          <div className="main">
+            {error && (
+              <div className="error-banner">
+                ⚠ Failed to load data: {error}. Check your API configuration and try refreshing.
+              </div>
+            )}
 
-                <div className="filter-group">
-                  <label className="filter-label">Staff Member</label>
-                  <select className="select" value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value)}>
-                    <option value="all">All Staff</option>
-                    {people.map(person => (
-                      <option key={person.id} value={person.id}>{person['full-name']}</option>
-                    ))}
-                  </select>
-                </div>
+            {/* Filters */}
+            <div className="filters-bar">
+              <div className="filter-group">
+                <label className="filter-label">Project</label>
+                <select className="filter-select" value={filterProject} onChange={e => setFilterProject(e.target.value)}>
+                  <option value="all">All Projects</option>
+                  {projectOptions.map(([id, name]) => (
+                    <option key={id} value={id}>{name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="filter-group">
+                <label className="filter-label">Deadline From</label>
+                <input type="date" className="filter-date" value={filterDateFrom}
+                  onChange={e => setFilterDateFrom(e.target.value)} />
+              </div>
+              <div className="filter-group">
+                <label className="filter-label">Deadline To</label>
+                <input type="date" className="filter-date" value={filterDateTo}
+                  onChange={e => setFilterDateTo(e.target.value)} />
+              </div>
+              {hasActiveFilters && (
+                <button className="filter-reset" onClick={resetFilters}>✕ Clear filters</button>
+              )}
 
-                <div className="filter-group">
-                  <label className="filter-label">Date Range</label>
-                  <div className="date-inputs">
-                    <input type="date" className="date-input" value={dateRange.start} onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))} />
-                    <span className="date-separator">→</span>
-                    <input type="date" className="date-input" value={dateRange.end} onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))} />
-                  </div>
-                </div>
+              <div className="view-toggle">
+                <button className={viewMode === 'table' ? 'active' : ''} onClick={() => setViewMode('table')}>
+                  ☰ Table
+                </button>
+                <button className={viewMode === 'chart' ? 'active' : ''} onClick={() => setViewMode('chart')}>
+                  ◫ Charts
+                </button>
               </div>
             </div>
 
-            <div className="stats-row">
-              <div className="stats-card cyan">
-                <div className="stats-icon">📋</div>
-                <div><div className="stats-value">{filteredTasks.length}</div><div className="stats-label">Total Tasks</div></div>
+            {loading ? (
+              <div className="loading-state">
+                <div className="spinner" />
+                <div className="loading-text">Fetching tasks from Teamwork…</div>
               </div>
-              <div className="stats-card green">
-                <div className="stats-icon">✅</div>
-                <div><div className="stats-value">{tasksByStatus.completed}</div><div className="stats-label">Completed</div></div>
-              </div>
-              <div className="stats-card amber">
-                <div className="stats-icon">⏳</div>
-                <div><div className="stats-value">{tasksByStatus.active - tasksByStatus.overdue}</div><div className="stats-label">In Progress</div></div>
-              </div>
-              <div className="stats-card red">
-                <div className="stats-icon">🚨</div>
-                <div><div className="stats-value">{tasksByStatus.overdue}</div><div className="stats-label">Overdue</div></div>
-              </div>
-              <div className="stats-card purple">
-                <div className="stats-icon">⏱️</div>
-                <div><div className="stats-value">{totalHours.toFixed(1)}h</div><div className="stats-label">Hours Logged</div></div>
-              </div>
-            </div>
-
-            <div className="content-grid">
-              <div className="card">
-                <h3 className="card-title">📊 Workload by {viewMode === 'staff' ? 'Staff Member' : 'Project'}</h3>
-                <div className="chart-container">
-                  {workloadData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={workloadData} layout="vertical" margin={{ top: 10, right: 30, left: 120, bottom: 10 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(99, 102, 241, 0.1)" horizontal={true} vertical={false} />
-                        <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} axisLine={{ stroke: 'rgba(99, 102, 241, 0.2)' }} />
-                        <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={13} width={110} tickLine={false} axisLine={false} />
-                        <Tooltip
-                          contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '12px', color: '#f1f5f9', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}
-                          formatter={(value, name) => [name === 'hours' ? `${value.toFixed(1)} hours` : `${value} tasks`, name === 'hours' ? '⏱️ Hours' : '📋 Tasks']}
-                          labelFormatter={(label, payload) => payload[0]?.payload?.fullName || label}
-                          cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
-                        />
-                        <Bar dataKey="hours" name="hours" radius={[0, 8, 8, 0]} barSize={28}>
-                          {workloadData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="no-data">No data matches your filters</div>
-                  )}
-                </div>
-                <div className="chart-legend">
-                  <span className="legend-item"><span className="legend-dot" style={{background: '#06b6d4'}}></span>Hours Logged</span>
-                </div>
-              </div>
-
-              <div className="card">
-                <h3 className="card-title">📝 Tasks <span className="task-count">{filteredTasks.length}</span></h3>
-                
-                {pieData.length > 0 && (
-                  <div className="pie-section">
-                    <div className="pie-container">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={3} dataKey="value">
-                            {pieData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                        </PieChart>
+            ) : (
+              <>
+                {/* Charts View */}
+                {viewMode === 'chart' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20, marginBottom: 24 }}>
+                    <div className="chart-section">
+                      <div className="chart-header">
+                        <div>
+                          <div className="chart-title">Tasks by Staff Member</div>
+                          <div className="chart-subtitle">Stacked by status</div>
+                        </div>
+                      </div>
+                      <ResponsiveContainer width="100%" height={Math.max(280, staffGroups.length * 44)}>
+                        <BarChart data={barChartData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+                          <XAxis type="number" tick={{ fill: '#6b7084', fontSize: 12 }} axisLine={false} tickLine={false} />
+                          <YAxis type="category" dataKey="name" width={120}
+                            tick={{ fill: '#9ca0b0', fontSize: 12 }} axisLine={false} tickLine={false} />
+                          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59,130,246,0.06)' }} />
+                          <Bar dataKey="Active" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} />
+                          <Bar dataKey="Overdue" stackId="a" fill="#ef4444" />
+                          <Bar dataKey="Complete" stackId="a" fill="#22c55e" radius={[0, 4, 4, 0]} />
+                        </BarChart>
                       </ResponsiveContainer>
                     </div>
-                    <div className="pie-legend">
-                      {pieData.map((item, i) => (
-                        <div key={i} className="pie-legend-item">
-                          <span className="pie-legend-dot" style={{background: item.color}}></span>
-                          {item.name}: {item.value}
+
+                    <div className="chart-section">
+                      <div className="chart-header">
+                        <div>
+                          <div className="chart-title">Task Status</div>
+                          <div className="chart-subtitle">Overall breakdown</div>
                         </div>
-                      ))}
+                      </div>
+                      <ResponsiveContainer width="100%" height={220}>
+                        <PieChart>
+                          <Pie data={statusTotals} cx="50%" cy="50%" innerRadius={55} outerRadius={85}
+                            paddingAngle={3} dataKey="value">
+                            {statusTotals.map((entry, i) => (
+                              <Cell key={i} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip content={<CustomTooltip />} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 8 }}>
+                        {statusTotals.map(s => (
+                          <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, display: 'inline-block' }} />
+                            <span style={{ color: '#9ca0b0' }}>{s.name}</span>
+                            <span style={{ fontWeight: 600 }}>{s.value}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
 
-                <div className="task-list">
-                  {filteredTasks.slice(0, 15).map((task) => {
-                    const isOverdue = task['due-date'] && !task.completed && new Date(task['due-date'].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) < new Date();
+                {/* Staff Sections */}
+                {staffGroups.length === 0 ? (
+                  <div className="empty-state">No tasks match your current filters.</div>
+                ) : (
+                  staffGroups.map(group => {
+                    const collapsed = collapsedStaff[group.name];
                     return (
-                      <div key={task.id} className="task-item">
-                        <div className="task-header">
-                          <span className={`task-status ${task.completed ? 'complete' : isOverdue ? 'overdue' : 'active'}`}>
-                            {task.completed ? '✓' : isOverdue ? '!' : '○'}
-                          </span>
-                          <span className="task-name">{task.content}</span>
+                      <div key={group.name} className="staff-section">
+                        <div className="staff-header" onClick={() => toggleCollapse(group.name)}>
+                          <div className="staff-info">
+                            <div className="staff-avatar">{getInitials(group.name)}</div>
+                            <span className="staff-name">{group.name}</span>
+                            <div className="staff-badges">
+                              <span className="badge badge-total">{group.total} tasks</span>
+                              {group.overdue > 0 && <span className="badge badge-overdue">{group.overdue} overdue</span>}
+                              <span className="badge badge-active">{group.active} active</span>
+                              <span className="badge badge-complete">{group.complete} done</span>
+                            </div>
+                          </div>
+                          <span className={`collapse-icon ${collapsed ? 'collapsed' : ''}`}>▾</span>
                         </div>
-                        <div className="task-meta">
-                          <span className="task-project">{task['project-name']}</span>
-                          {task['responsible-party-summary'] && <span className="task-assignee">👤 {task['responsible-party-summary']}</span>}
-                          {task['due-date'] && <span className="task-due">📅 {task['due-date'].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')}</span>}
-                        </div>
+                        {!collapsed && (
+                          <table className="task-table">
+                            <thead>
+                              <tr>
+                                <th style={{ width: 30 }}></th>
+                                <th>Task</th>
+                                <th>Status</th>
+                                <th>Deadline</th>
+                                <th>Priority</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {group.tasks.map(task => {
+                                const status = getTaskStatus(task);
+                                const due = parseDate(task['due-date']);
+                                const dateClass = status === 'overdue' ? 'date-overdue'
+                                  : isUpcomingSoon(task) ? 'date-upcoming' : 'date-ok';
+                                const prio = (task.priority || '').toLowerCase();
+                                const prioClass = prio === 'high' ? 'priority-high'
+                                  : prio === 'medium' ? 'priority-medium'
+                                  : prio === 'low' ? 'priority-low' : 'priority-none';
+                                return (
+                                  <tr key={task.id}>
+                                    <td>
+                                      <span className={`priority-dot ${prioClass}`}
+                                        title={prio || 'none'} />
+                                    </td>
+                                    <td className="task-name-cell">
+                                      <div className="task-title">{task.content}</div>
+                                      <span className="task-project-tag">{task['project-name']}</span>
+                                    </td>
+                                    <td>
+                                      <span className={`status-badge status-${status}`}>
+                                        {status === 'complete' ? '✓ Done'
+                                          : status === 'overdue' ? '! Overdue'
+                                          : '○ Active'}
+                                      </span>
+                                    </td>
+                                    <td className="date-cell">
+                                      {due ? (
+                                        <span className={dateClass}>{formatDate(due)}</span>
+                                      ) : (
+                                        <span className="no-date">No deadline</span>
+                                      )}
+                                    </td>
+                                    <td style={{ fontSize: 12, color: '#9ca0b0', textTransform: 'capitalize' }}>
+                                      {prio || '—'}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        )}
                       </div>
                     );
-                  })}
-                  {filteredTasks.length === 0 && <div className="no-data">No tasks match your filters</div>}
-                </div>
-              </div>
-            </div>
-
-            <footer className="footer">
-              <p>Connected to <span>9cloudwebworks.teamwork.com</span> {lastUpdated && <> • Last updated: {lastUpdated.toLocaleString()}</>}</p>
-            </footer>
+                  })
+                )}
+              </>
+            )}
           </div>
         </div>
       );
     }
 
-    ReactDOM.render(<TeamworkDashboard />, document.getElementById('root'));
+    ReactDOM.render(<App />, document.getElementById('root'));
   </script>
 </body>
 </html>
