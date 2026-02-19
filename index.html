@@ -4,310 +4,199 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>9Cloud — Teamwork Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --bg-primary: #0f1117;
-      --bg-secondary: #161820;
-      --bg-card: #1c1e28;
-      --bg-card-hover: #22242f;
-      --border: #2a2d3a;
-      --border-light: #333649;
-      --text-primary: #e8eaed;
-      --text-secondary: #9ca0b0;
-      --text-muted: #6b7084;
-      --accent: #3b82f6;
-      --accent-hover: #2563eb;
-      --accent-subtle: rgba(59, 130, 246, 0.1);
-      --green: #22c55e;
-      --green-subtle: rgba(34, 197, 94, 0.12);
-      --amber: #f59e0b;
-      --amber-subtle: rgba(245, 158, 11, 0.12);
-      --red: #ef4444;
-      --red-subtle: rgba(239, 68, 68, 0.12);
-      --purple: #a78bfa;
-      --purple-subtle: rgba(167, 139, 250, 0.1);
-      --radius: 10px;
-      --radius-sm: 6px;
-      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
-    }
-
     body {
-      font-family: 'DM Sans', -apple-system, sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      line-height: 1.5;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0c1222 0%, #1a1f35 100%);
+      color: #e2e8f0;
       min-height: 100vh;
     }
 
-    /* ─── HEADER ─── */
+    .dashboard { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+    /* Header */
     .header {
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
     }
-    .header-left { display: flex; align-items: center; gap: 14px; }
-    .logo {
-      width: 36px; height: 36px;
-      background: linear-gradient(135deg, var(--accent), #8b5cf6);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 14px; color: #fff;
+    .header h1 {
+      font-size: 24px; font-weight: 700;
+      background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .header-title { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
-    .header-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
-    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .header-sub { color: #64748b; font-size: 13px; margin-top: 2px; }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
 
     .btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 16px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--bg-card);
-      color: var(--text-primary);
-      font-family: inherit; font-size: 13px; font-weight: 500;
-      cursor: pointer; transition: all 0.15s;
+      padding: 8px 18px; border-radius: 8px; border: none;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; font-family: inherit;
     }
-    .btn:hover { background: var(--bg-card-hover); border-color: var(--border-light); }
-    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .btn-primary:hover { background: var(--accent-hover); }
-    .btn.loading { opacity: 0.6; pointer-events: none; }
+    .btn-primary {
+      background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .last-updated { font-size: 11px; color: #475569; }
 
-    /* ─── STATUS BAR ─── */
-    .status-bar {
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 32px;
-      display: flex; align-items: center; gap: 20px;
-      font-size: 12px; color: var(--text-muted);
+    /* Stats Row */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px; margin-bottom: 24px;
     }
-    .status-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--green); display: inline-block; margin-right: 6px;
-      animation: pulse 2s infinite;
+    .stat-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 16px; text-align: center;
     }
-    .status-dot.error { background: var(--red); animation: none; }
-    .status-dot.loading { background: var(--amber); }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
+    .stat-value {
+      font-size: 28px; font-weight: 700;
+      background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .stat-chip {
-      background: var(--bg-card);
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-weight: 500;
-      color: var(--text-secondary);
-    }
+    .stat-value.green { background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; }
+    .stat-value.amber { background: linear-gradient(135deg, #f59e0b, #fbbf24); -webkit-background-clip: text; }
+    .stat-value.red { background: linear-gradient(135deg, #ef4444, #f87171); -webkit-background-clip: text; }
+    .stat-value.purple { background: linear-gradient(135deg, #8b5cf6, #a78bfa); -webkit-background-clip: text; }
+    .stat-label { font-size: 12px; color: #64748b; margin-top: 4px; font-weight: 500; }
 
-    /* ─── LAYOUT ─── */
-    .main { padding: 24px 32px; max-width: 1440px; margin: 0 auto; }
-
-    /* ─── FILTERS ─── */
-    .filters-bar {
-      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    /* Filters */
+    .filters {
+      display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;
       margin-bottom: 24px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; padding: 16px;
     }
     .filter-group { display: flex; flex-direction: column; gap: 4px; }
     .filter-label {
-      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      font-size: 11px; font-weight: 600; color: #64748b;
       text-transform: uppercase; letter-spacing: 0.5px;
     }
-    .filter-select, .filter-date {
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--bg-card);
-      color: var(--text-primary);
-      font-family: inherit; font-size: 13px;
-      min-width: 180px;
-      cursor: pointer;
-      transition: border-color 0.15s;
+    select, input[type="date"] {
+      padding: 8px 12px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #e2e8f0; font-family: inherit; font-size: 13px;
+      min-width: 180px; cursor: pointer;
     }
-    .filter-select:hover, .filter-date:hover { border-color: var(--border-light); }
-    .filter-select:focus, .filter-date:focus { border-color: var(--accent); outline: none; }
-    .filter-date { min-width: 150px; }
-    .filter-date::-webkit-calendar-picker-indicator { filter: invert(0.7); }
+    select:focus, input[type="date"]:focus { outline: none; border-color: #06b6d4; }
+    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); }
+
+    .view-toggle {
+      display: flex; background: rgba(255,255,255,0.06);
+      border-radius: 8px; overflow: hidden; margin-left: auto;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .view-toggle button {
+      padding: 8px 16px; border: none; background: none;
+      color: #64748b; font-family: inherit; font-size: 12px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .view-toggle button.active {
+      background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+      color: #fff;
+    }
+
     .filter-reset {
-      align-self: flex-end;
-      font-size: 12px; color: var(--accent);
-      background: none; border: none; cursor: pointer;
-      font-family: inherit; padding: 8px 4px;
+      background: none; border: none; color: #06b6d4;
+      font-size: 12px; cursor: pointer; font-family: inherit; padding: 8px 4px;
     }
     .filter-reset:hover { text-decoration: underline; }
 
-    /* ─── VIEW TOGGLE ─── */
-    .view-toggle {
-      display: flex; align-items: center;
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); overflow: hidden;
-      margin-left: auto;
-    }
-    .view-toggle button {
-      padding: 7px 14px; border: none; background: none;
-      color: var(--text-muted); font-family: inherit; font-size: 12px;
-      font-weight: 500; cursor: pointer; transition: all 0.15s;
-    }
-    .view-toggle button.active {
-      background: var(--accent-subtle); color: var(--accent);
-    }
-
-    /* ─── CHART SECTION ─── */
-    .chart-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
+    /* Charts */
+    .charts-row {
+      display: grid; grid-template-columns: 1fr 320px; gap: 16px;
       margin-bottom: 24px;
     }
-    .chart-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 16px;
+    .chart-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 20px;
     }
-    .chart-title { font-size: 14px; font-weight: 600; }
-    .chart-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .chart-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .chart-subtitle { font-size: 12px; color: #64748b; margin-bottom: 16px; }
 
-    /* ─── STAFF SECTIONS ─── */
-    .staff-section {
-      margin-bottom: 20px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
+    /* Task List */
+    .task-list-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; overflow: hidden;
     }
-    .staff-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 20px;
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      user-select: none;
+    .task-list-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .task-list-title { font-size: 15px; font-weight: 600; }
+    .task-count { font-size: 12px; color: #64748b; }
+    .task-list { max-height: 500px; overflow-y: auto; }
+    .task-list::-webkit-scrollbar { width: 6px; }
+    .task-list::-webkit-scrollbar-track { background: transparent; }
+    .task-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+    .task-item {
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
       transition: background 0.15s;
     }
-    .staff-header:hover { background: var(--bg-card-hover); }
-    .staff-info { display: flex; align-items: center; gap: 12px; }
-    .staff-avatar {
-      width: 34px; height: 34px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--purple));
+    .task-item:hover { background: rgba(255,255,255,0.03); }
+    .task-item:last-child { border-bottom: none; }
+    .task-top { display: flex; align-items: flex-start; gap: 10px; }
+    .task-status-icon {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 13px; color: #fff;
-      flex-shrink: 0;
+      font-size: 11px; font-weight: 700; margin-top: 1px;
     }
-    .staff-name { font-weight: 600; font-size: 14px; }
-    .staff-badges { display: flex; gap: 8px; align-items: center; }
-    .badge {
-      padding: 3px 10px; border-radius: 20px;
-      font-size: 11px; font-weight: 600;
+    .task-status-icon.complete { background: rgba(16,185,129,0.15); color: #10b981; }
+    .task-status-icon.overdue { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .task-status-icon.active { background: rgba(6,182,212,0.15); color: #06b6d4; }
+    .task-name { font-size: 13px; font-weight: 500; }
+    .task-meta {
+      display: flex; gap: 12px; margin-top: 4px; margin-left: 32px;
+      font-size: 11px; color: #64748b; flex-wrap: wrap;
     }
-    .badge-total { background: var(--accent-subtle); color: var(--accent); }
-    .badge-complete { background: var(--green-subtle); color: var(--green); }
-    .badge-overdue { background: var(--red-subtle); color: var(--red); }
-    .badge-active { background: var(--amber-subtle); color: var(--amber); }
-    .collapse-icon {
-      color: var(--text-muted); font-size: 18px;
-      transition: transform 0.2s;
-    }
-    .collapse-icon.collapsed { transform: rotate(-90deg); }
+    .task-meta span { display: flex; align-items: center; gap: 3px; }
 
-    /* ─── TASK TABLE ─── */
-    .task-table { width: 100%; border-collapse: collapse; }
-    .task-table th {
-      text-align: left; padding: 10px 20px;
-      font-size: 11px; font-weight: 600; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 0.5px;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg-primary);
-    }
-    .task-table td {
-      padding: 10px 20px;
-      font-size: 13px;
-      border-bottom: 1px solid rgba(42, 45, 58, 0.5);
-      vertical-align: top;
-    }
-    .task-table tr:last-child td { border-bottom: none; }
-    .task-table tr:hover td { background: rgba(59, 130, 246, 0.03); }
+    .no-data { text-align: center; padding: 40px; color: #475569; font-size: 14px; }
 
-    .task-name-cell { max-width: 400px; }
-    .task-title { font-weight: 500; color: var(--text-primary); }
-    .task-project-tag {
-      display: inline-block; margin-top: 4px;
-      font-size: 11px; color: var(--purple);
-      background: var(--purple-subtle);
-      padding: 2px 8px; border-radius: 4px;
-    }
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 10px; border-radius: 20px;
-      font-size: 12px; font-weight: 500;
-    }
-    .status-complete { background: var(--green-subtle); color: var(--green); }
-    .status-active { background: var(--accent-subtle); color: var(--accent); }
-    .status-overdue { background: var(--red-subtle); color: var(--red); }
-
-    .date-cell { white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
-    .date-overdue { color: var(--red); }
-    .date-upcoming { color: var(--amber); }
-    .date-ok { color: var(--text-secondary); }
-    .no-date { color: var(--text-muted); font-style: italic; font-family: 'DM Sans', sans-serif; }
-
-    .priority-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      display: inline-block;
-    }
-    .priority-high { background: var(--red); }
-    .priority-medium { background: var(--amber); }
-    .priority-low { background: var(--green); }
-    .priority-none { background: var(--text-muted); }
-
-    /* ─── LOADING / EMPTY ─── */
+    /* Loading */
     .loading-state {
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       padding: 80px 20px; gap: 16px;
     }
     .spinner {
-      width: 32px; height: 32px; border-radius: 50%;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #06b6d4;
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-text { font-size: 14px; color: var(--text-muted); }
-
-    .empty-state {
-      text-align: center; padding: 60px 20px;
-      color: var(--text-muted); font-size: 14px;
-    }
+    .loading-text { color: #64748b; font-size: 14px; }
 
     .error-banner {
-      background: var(--red-subtle);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      border-radius: var(--radius);
-      padding: 14px 20px;
-      margin-bottom: 20px;
-      color: var(--red);
-      font-size: 13px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 10px; padding: 14px 20px;
+      margin-bottom: 20px; color: #f87171; font-size: 13px;
     }
 
-    /* ─── RESPONSIVE ─── */
+    .footer {
+      text-align: center; padding: 20px; font-size: 12px; color: #475569;
+    }
+    .footer span { color: #06b6d4; }
+
     @media (max-width: 768px) {
-      .header, .status-bar, .main { padding-left: 16px; padding-right: 16px; }
-      .filters-bar { flex-direction: column; align-items: stretch; }
-      .filter-select, .filter-date { min-width: 100%; }
+      .dashboard { padding: 12px; }
+      .charts-row { grid-template-columns: 1fr; }
+      .filters { flex-direction: column; align-items: stretch; }
+      select, input[type="date"] { min-width: 100%; }
       .view-toggle { margin-left: 0; }
-      .task-table { font-size: 12px; }
-      .task-table th, .task-table td { padding: 8px 12px; }
-      .task-name-cell { max-width: 200px; }
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
 </head>
@@ -325,8 +214,8 @@
     const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } = Recharts;
 
     const API_BASE = '/api/teamwork';
+    const COLORS = ['#06b6d4', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#ec4899', '#6366f1', '#14b8a6', '#84cc16', '#f97316'];
 
-    // ─── Helpers ───
     function api(endpoint, params = {}) {
       const query = new URLSearchParams({ endpoint, ...params });
       return fetch(`${API_BASE}?${query}`).then(r => {
@@ -337,7 +226,6 @@
 
     function parseDate(str) {
       if (!str) return null;
-      // Teamwork returns YYYYMMDD or YYYY-MM-DD
       const clean = str.replace(/-/g, '');
       if (clean.length === 8) {
         return new Date(clean.slice(0,4), parseInt(clean.slice(4,6))-1, clean.slice(6,8));
@@ -346,69 +234,40 @@
     }
 
     function formatDate(d) {
-      if (!d) return null;
+      if (!d) return '';
       return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
-    function isOverdue(task) {
-      if (task.completed) return false;
-      if (!task['due-date']) return false;
-      const due = parseDate(task['due-date']);
-      return due && due < new Date();
-    }
-
-    function isUpcomingSoon(task) {
-      if (task.completed || !task['due-date']) return false;
-      const due = parseDate(task['due-date']);
-      const now = new Date();
-      const threeDays = new Date(now.getTime() + 3 * 86400000);
-      return due && due >= now && due <= threeDays;
-    }
-
-    function getTaskStatus(task) {
-      if (task.completed) return 'complete';
-      if (isOverdue(task)) return 'overdue';
-      return 'active';
-    }
-
-    function getInitials(name) {
-      return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-    }
-
-    const COLORS = ['#3b82f6', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#6366f1'];
-
-    // ─── App ───
-    function App() {
-      const [tasks, setTasks] = useState([]);
+    function TeamworkDashboard() {
       const [projects, setProjects] = useState([]);
+      const [people, setPeople] = useState([]);
+      const [tasks, setTasks] = useState([]);
+      const [timeEntries, setTimeEntries] = useState([]);
       const [loading, setLoading] = useState(true);
       const [error, setError] = useState(null);
       const [lastUpdated, setLastUpdated] = useState(null);
 
       // Filters
-      const [filterProject, setFilterProject] = useState('all');
-      const [filterDateFrom, setFilterDateFrom] = useState('');
-      const [filterDateTo, setFilterDateTo] = useState('');
-      const [viewMode, setViewMode] = useState('table'); // table | chart
-
-      // Collapse state
-      const [collapsedStaff, setCollapsedStaff] = useState({});
+      const [viewMode, setViewMode] = useState('staff');
+      const [selectedProject, setSelectedProject] = useState('all');
+      const [selectedStaff, setSelectedStaff] = useState('all');
+      const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
       const fetchData = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-          // Fetch tasks (page through if needed) and projects
-          const [tasksRes, projectsRes] = await Promise.all([
-            api('tasks.json', { 'page': '1', 'pageSize': '250', 'includeCompletedTasks': 'true' }),
+          const [projRes, peopleRes, tasksRes, timeRes] = await Promise.all([
             api('projects.json', { status: 'active' }),
+            api('people.json'),
+            api('tasks.json', { pageSize: '250', includeCompletedTasks: 'true' }),
+            api('time_entries.json', { pageSize: '250' }),
           ]);
 
-          const allTasks = (tasksRes['todo-items'] || []);
-          const allProjects = (projectsRes.projects || []);
-
-          setTasks(allTasks);
-          setProjects(allProjects);
+          setProjects(projRes.projects || []);
+          setPeople(peopleRes.people || []);
+          setTasks(tasksRes['todo-items'] || []);
+          setTimeEntries(timeRes['time-entries'] || []);
           setLastUpdated(new Date());
         } catch (err) {
           setError(err.message);
@@ -419,118 +278,159 @@
 
       useEffect(() => { fetchData(); }, [fetchData]);
 
-      // ─── Filtering ───
+      // Active Staff (with tasks or hours)
+      const activeStaff = useMemo(() => {
+        return people.filter(p =>
+          tasks.some(t => (t['responsible-party-ids'] || '').split(',').includes(String(p.id))) ||
+          timeEntries.some(te => String(te['person-id']) === String(p.id))
+        );
+      }, [people, tasks, timeEntries]);
+
+      // Filtered Tasks
       const filteredTasks = useMemo(() => {
         return tasks.filter(task => {
-          // Project filter
-          if (filterProject !== 'all' && String(task['project-id']) !== filterProject) return false;
-
-          // Date filter
-          if (filterDateFrom || filterDateTo) {
-            const due = parseDate(task['due-date']);
-            if (!due) return false;
-            if (filterDateFrom && due < new Date(filterDateFrom)) return false;
-            if (filterDateTo && due > new Date(filterDateTo + 'T23:59:59')) return false;
+          if (selectedProject !== 'all' && String(task['project-id']) !== selectedProject) return false;
+          if (selectedStaff !== 'all') {
+            const ids = (task['responsible-party-ids'] || '').split(',');
+            if (!ids.includes(selectedStaff)) return false;
           }
-
+          if (dateRange.start || dateRange.end) {
+            const d = parseDate(task['due-date']);
+            if (!d) return false;
+            if (dateRange.start && d < new Date(dateRange.start)) return false;
+            if (dateRange.end && d > new Date(dateRange.end + 'T23:59:59')) return false;
+          }
           return true;
         });
-      }, [tasks, filterProject, filterDateFrom, filterDateTo]);
+      }, [tasks, selectedProject, selectedStaff, dateRange]);
 
-      // ─── Group by Staff ───
-      const staffGroups = useMemo(() => {
-        const groups = {};
-        filteredTasks.forEach(task => {
-          const name = task['responsible-party-summary'] || 'Unassigned';
-          if (!groups[name]) groups[name] = [];
-          groups[name].push(task);
+      // Filtered Time Entries
+      const filteredTimeEntries = useMemo(() => {
+        return timeEntries.filter(entry => {
+          if (selectedProject !== 'all' && String(entry['project-id']) !== selectedProject) return false;
+          if (selectedStaff !== 'all' && String(entry['person-id']) !== selectedStaff) return false;
+          if (dateRange.start && entry.date && new Date(entry.date) < new Date(dateRange.start)) return false;
+          if (dateRange.end && entry.date && new Date(entry.date) > new Date(dateRange.end + 'T23:59:59')) return false;
+          return true;
         });
+      }, [timeEntries, selectedProject, selectedStaff, dateRange]);
 
-        // Sort by number of tasks descending
-        return Object.entries(groups)
-          .sort((a, b) => b[1].length - a[1].length)
-          .map(([name, tasks]) => ({
-            name,
-            tasks: tasks.sort((a, b) => {
-              // Sort: overdue first, then by due date
-              const aOverdue = isOverdue(a) ? 0 : 1;
-              const bOverdue = isOverdue(b) ? 0 : 1;
-              if (aOverdue !== bOverdue) return aOverdue - bOverdue;
-              const aDate = parseDate(a['due-date']);
-              const bDate = parseDate(b['due-date']);
-              if (!aDate && !bDate) return 0;
-              if (!aDate) return 1;
-              if (!bDate) return -1;
-              return aDate - bDate;
-            }),
-            total: tasks.length,
-            complete: tasks.filter(t => t.completed).length,
-            overdue: tasks.filter(t => isOverdue(t)).length,
-            active: tasks.filter(t => !t.completed && !isOverdue(t)).length,
-          }));
-      }, [filteredTasks]);
+      // Stats
+      const stats = useMemo(() => {
+        const total = filteredTasks.length;
+        const completed = filteredTasks.filter(t => t.completed).length;
+        const overdue = filteredTasks.filter(t => {
+          if (t.completed) return false;
+          const d = parseDate(t['due-date']);
+          return d && d < new Date();
+        }).length;
+        const active = total - completed - overdue;
+        const totalHours = filteredTimeEntries.reduce((sum, e) => sum + (parseFloat(e.hoursDecimal) || 0), 0);
+        return { total, completed, active, overdue, totalHours };
+      }, [filteredTasks, filteredTimeEntries]);
 
-      // ─── Chart Data ───
-      const barChartData = useMemo(() => {
-        return staffGroups.map(g => ({
-          name: g.name.length > 14 ? g.name.slice(0, 12) + '…' : g.name,
-          fullName: g.name,
-          Active: g.active,
-          Overdue: g.overdue,
-          Complete: g.complete,
-        }));
-      }, [staffGroups]);
+      // Workload Chart Data
+      const workloadData = useMemo(() => {
+        if (viewMode === 'staff') {
+          const map = {};
+          activeStaff.forEach(p => {
+            map[p.id] = {
+              name: p['first-name'] || 'Unknown',
+              fullName: (p['first-name'] || '') + ' ' + (p['last-name'] || ''),
+              tasks: 0, hours: 0,
+            };
+          });
+          filteredTasks.forEach(task => {
+            (task['responsible-party-ids'] || '').split(',').forEach(id => {
+              if (map[id]) map[id].tasks++;
+            });
+          });
+          filteredTimeEntries.forEach(entry => {
+            const pid = String(entry['person-id']);
+            if (map[pid]) map[pid].hours += parseFloat(entry.hoursDecimal) || 0;
+          });
+          return Object.values(map)
+            .filter(d => d.tasks > 0 || d.hours > 0)
+            .sort((a, b) => b.hours - a.hours)
+            .map(d => ({ ...d, hours: Math.round(d.hours * 10) / 10 }));
+        } else {
+          const map = {};
+          projects.forEach(p => {
+            map[p.id] = {
+              name: (p.name || '').length > 25 ? p.name.slice(0, 22) + '…' : (p.name || 'Unknown'),
+              fullName: p.name || 'Unknown',
+              tasks: 0, hours: 0,
+            };
+          });
+          filteredTasks.forEach(task => {
+            const pid = String(task['project-id']);
+            if (map[pid]) map[pid].tasks++;
+          });
+          filteredTimeEntries.forEach(entry => {
+            const pid = String(entry['project-id']);
+            if (map[pid]) map[pid].hours += parseFloat(entry.hoursDecimal) || 0;
+          });
+          return Object.values(map)
+            .filter(d => d.tasks > 0 || d.hours > 0)
+            .sort((a, b) => b.hours - a.hours)
+            .map(d => ({ ...d, hours: Math.round(d.hours * 10) / 10 }));
+        }
+      }, [viewMode, activeStaff, projects, filteredTasks, filteredTimeEntries]);
 
-      const statusTotals = useMemo(() => {
-        const complete = filteredTasks.filter(t => t.completed).length;
-        const overdue = filteredTasks.filter(t => isOverdue(t)).length;
-        const active = filteredTasks.length - complete - overdue;
+      // Pie Data
+      const pieData = useMemo(() => {
         return [
-          { name: 'Active', value: active, color: '#3b82f6' },
-          { name: 'Complete', value: complete, color: '#22c55e' },
-          { name: 'Overdue', value: overdue, color: '#ef4444' },
-        ].filter(s => s.value > 0);
+          { name: 'Active', value: stats.active, fill: '#06b6d4' },
+          { name: 'Completed', value: stats.completed, fill: '#10b981' },
+          { name: 'Overdue', value: stats.overdue, fill: '#ef4444' },
+        ].filter(d => d.value > 0);
+      }, [stats]);
+
+      const getTaskStatus = (task) => {
+        if (task.completed) return 'complete';
+        const d = parseDate(task['due-date']);
+        if (d && d < new Date()) return 'overdue';
+        return 'active';
+      };
+
+      const sortedTasks = useMemo(() => {
+        return [...filteredTasks].sort((a, b) => {
+          const sa = getTaskStatus(a) === 'overdue' ? 0 : getTaskStatus(a) === 'active' ? 1 : 2;
+          const sb = getTaskStatus(b) === 'overdue' ? 0 : getTaskStatus(b) === 'active' ? 1 : 2;
+          if (sa !== sb) return sa - sb;
+          const da = parseDate(a['due-date']);
+          const db = parseDate(b['due-date']);
+          if (!da && !db) return 0;
+          if (!da) return 1;
+          if (!db) return -1;
+          return da - db;
+        });
       }, [filteredTasks]);
 
-      // ─── Project list for filter ───
-      const projectOptions = useMemo(() => {
-        const seen = {};
-        tasks.forEach(t => {
-          if (t['project-id'] && t['project-name']) {
-            seen[t['project-id']] = t['project-name'];
-          }
-        });
-        return Object.entries(seen).sort((a, b) => a[1].localeCompare(b[1]));
-      }, [tasks]);
-
-      const toggleCollapse = (name) => {
-        setCollapsedStaff(prev => ({ ...prev, [name]: !prev[name] }));
-      };
+      const hasFilters = selectedProject !== 'all' || selectedStaff !== 'all' || dateRange.start || dateRange.end;
 
       const resetFilters = () => {
-        setFilterProject('all');
-        setFilterDateFrom('');
-        setFilterDateTo('');
+        setSelectedProject('all');
+        setSelectedStaff('all');
+        setDateRange({ start: '', end: '' });
       };
 
-      const hasActiveFilters = filterProject !== 'all' || filterDateFrom || filterDateTo;
-
-      // ─── Custom Tooltip ───
-      const CustomTooltip = ({ active, payload, label }) => {
+      // Custom Tooltip
+      const CustomTooltip = ({ active, payload }) => {
         if (!active || !payload?.length) return null;
         const data = payload[0]?.payload;
         return (
           <div style={{
-            background: '#1c1e28', border: '1px solid #2a2d3a',
-            borderRadius: '8px', padding: '12px 16px', fontSize: '13px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
+            background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 8, padding: '10px 14px', fontSize: 13,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
           }}>
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>{data?.fullName || label}</div>
+            <div style={{ fontWeight: 600, marginBottom: 6 }}>{data?.fullName || data?.name}</div>
             {payload.map((p, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.color, display: 'inline-block' }} />
-                <span style={{ color: '#9ca0b0' }}>{p.name}:</span>
-                <span style={{ fontWeight: 600 }}>{p.value}</span>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.color || p.fill, display: 'inline-block' }} />
+                <span style={{ color: '#94a3b8' }}>{p.name}:</span>
+                <span style={{ fontWeight: 600 }}>{p.dataKey === 'hours' ? p.value + 'h' : p.value}</span>
               </div>
             ))}
           </div>
@@ -538,229 +438,205 @@
       };
 
       return (
-        <div>
+        <div className="dashboard">
           {/* Header */}
-          <header className="header">
-            <div className="header-left">
-              <div className="logo">9C</div>
-              <div>
-                <div className="header-title">Teamwork Dashboard</div>
-                <div className="header-subtitle">Tasks by Staff</div>
-              </div>
+          <div className="header">
+            <div>
+              <h1>☁ 9Cloud Teamwork Dashboard</h1>
+              <div className="header-sub">Real-time project tracking & workload overview</div>
             </div>
             <div className="header-actions">
-              <button className={`btn btn-primary ${loading ? 'loading' : ''}`} onClick={fetchData}>
-                ↻ Refresh
+              {lastUpdated && <span className="last-updated">Updated {lastUpdated.toLocaleTimeString()}</span>}
+              <button className="btn btn-primary" onClick={fetchData} disabled={loading}>
+                {loading ? '⟳ Loading…' : '↻ Refresh'}
               </button>
             </div>
-          </header>
-
-          {/* Status Bar */}
-          <div className="status-bar">
-            <span>
-              <span className={`status-dot ${error ? 'error' : loading ? 'loading' : ''}`} />
-              {error ? 'Connection error' : loading ? 'Loading…' : 'Connected'}
-            </span>
-            {!loading && !error && (
-              <>
-                <span className="stat-chip">{filteredTasks.length} tasks</span>
-                <span className="stat-chip">{staffGroups.length} staff</span>
-                <span className="stat-chip">{projectOptions.length} projects</span>
-                {lastUpdated && <span>Updated {lastUpdated.toLocaleTimeString()}</span>}
-              </>
-            )}
           </div>
 
-          <div className="main">
-            {error && (
-              <div className="error-banner">
-                ⚠ Failed to load data: {error}. Check your API configuration and try refreshing.
-              </div>
-            )}
-
-            {/* Filters */}
-            <div className="filters-bar">
-              <div className="filter-group">
-                <label className="filter-label">Project</label>
-                <select className="filter-select" value={filterProject} onChange={e => setFilterProject(e.target.value)}>
-                  <option value="all">All Projects</option>
-                  {projectOptions.map(([id, name]) => (
-                    <option key={id} value={id}>{name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="filter-group">
-                <label className="filter-label">Deadline From</label>
-                <input type="date" className="filter-date" value={filterDateFrom}
-                  onChange={e => setFilterDateFrom(e.target.value)} />
-              </div>
-              <div className="filter-group">
-                <label className="filter-label">Deadline To</label>
-                <input type="date" className="filter-date" value={filterDateTo}
-                  onChange={e => setFilterDateTo(e.target.value)} />
-              </div>
-              {hasActiveFilters && (
-                <button className="filter-reset" onClick={resetFilters}>✕ Clear filters</button>
-              )}
-
-              <div className="view-toggle">
-                <button className={viewMode === 'table' ? 'active' : ''} onClick={() => setViewMode('table')}>
-                  ☰ Table
-                </button>
-                <button className={viewMode === 'chart' ? 'active' : ''} onClick={() => setViewMode('chart')}>
-                  ◫ Charts
-                </button>
-              </div>
+          {error && (
+            <div className="error-banner">
+              ⚠ Failed to load data: {error}. Check your API configuration and try refreshing.
             </div>
+          )}
 
-            {loading ? (
-              <div className="loading-state">
-                <div className="spinner" />
-                <div className="loading-text">Fetching tasks from Teamwork…</div>
+          {loading ? (
+            <div className="loading-state">
+              <div className="spinner" />
+              <div className="loading-text">Connecting to Teamwork…</div>
+            </div>
+          ) : (
+            <>
+              {/* Stats */}
+              <div className="stats-row">
+                <div className="stat-card">
+                  <div className="stat-value">{stats.total}</div>
+                  <div className="stat-label">Total Tasks</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value green">{stats.completed}</div>
+                  <div className="stat-label">Completed</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value amber">{stats.active}</div>
+                  <div className="stat-label">In Progress</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value red">{stats.overdue}</div>
+                  <div className="stat-label">Overdue</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value purple">{stats.totalHours.toFixed(1)}h</div>
+                  <div className="stat-label">Hours Logged</div>
+                </div>
               </div>
-            ) : (
-              <>
-                {/* Charts View */}
-                {viewMode === 'chart' && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20, marginBottom: 24 }}>
-                    <div className="chart-section">
-                      <div className="chart-header">
-                        <div>
-                          <div className="chart-title">Tasks by Staff Member</div>
-                          <div className="chart-subtitle">Stacked by status</div>
-                        </div>
-                      </div>
-                      <ResponsiveContainer width="100%" height={Math.max(280, staffGroups.length * 44)}>
-                        <BarChart data={barChartData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
-                          <XAxis type="number" tick={{ fill: '#6b7084', fontSize: 12 }} axisLine={false} tickLine={false} />
-                          <YAxis type="category" dataKey="name" width={120}
-                            tick={{ fill: '#9ca0b0', fontSize: 12 }} axisLine={false} tickLine={false} />
-                          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59,130,246,0.06)' }} />
-                          <Bar dataKey="Active" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} />
-                          <Bar dataKey="Overdue" stackId="a" fill="#ef4444" />
-                          <Bar dataKey="Complete" stackId="a" fill="#22c55e" radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
 
-                    <div className="chart-section">
-                      <div className="chart-header">
-                        <div>
-                          <div className="chart-title">Task Status</div>
-                          <div className="chart-subtitle">Overall breakdown</div>
-                        </div>
-                      </div>
+              {/* Filters */}
+              <div className="filters">
+                <div className="filter-group">
+                  <label className="filter-label">Project</label>
+                  <select value={selectedProject} onChange={e => setSelectedProject(e.target.value)}>
+                    <option value="all">All Projects</option>
+                    {projects.sort((a, b) => (a.name || '').localeCompare(b.name || '')).map(p => (
+                      <option key={p.id} value={String(p.id)}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="filter-group">
+                  <label className="filter-label">Staff</label>
+                  <select value={selectedStaff} onChange={e => setSelectedStaff(e.target.value)}>
+                    <option value="all">All Staff</option>
+                    {activeStaff.sort((a, b) => (a['first-name'] || '').localeCompare(b['first-name'] || '')).map(p => (
+                      <option key={p.id} value={String(p.id)}>
+                        {p['first-name']} {p['last-name'] || ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="filter-group">
+                  <label className="filter-label">Due Date From</label>
+                  <input type="date" value={dateRange.start}
+                    onChange={e => setDateRange(prev => ({ ...prev, start: e.target.value }))} />
+                </div>
+                <div className="filter-group">
+                  <label className="filter-label">Due Date To</label>
+                  <input type="date" value={dateRange.end}
+                    onChange={e => setDateRange(prev => ({ ...prev, end: e.target.value }))} />
+                </div>
+                {hasFilters && <button className="filter-reset" onClick={resetFilters}>✕ Clear filters</button>}
+
+                <div className="view-toggle">
+                  <button className={viewMode === 'staff' ? 'active' : ''} onClick={() => setViewMode('staff')}>
+                    👤 By Staff
+                  </button>
+                  <button className={viewMode === 'project' ? 'active' : ''} onClick={() => setViewMode('project')}>
+                    📁 By Project
+                  </button>
+                </div>
+              </div>
+
+              {/* Charts */}
+              <div className="charts-row">
+                <div className="chart-card">
+                  <div className="chart-title">
+                    {viewMode === 'staff' ? 'Workload by Staff' : 'Workload by Project'}
+                  </div>
+                  <div className="chart-subtitle">Tasks & hours logged</div>
+                  {workloadData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={Math.max(280, workloadData.length * 44)}>
+                      <BarChart data={workloadData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+                        <XAxis type="number" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <YAxis type="category" dataKey="name" width={120}
+                          tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(6,182,212,0.06)' }} />
+                        <Bar dataKey="hours" name="Hours" fill="#8b5cf6" radius={[0, 4, 4, 0]} barSize={16} />
+                        <Bar dataKey="tasks" name="Tasks" fill="#06b6d4" radius={[0, 4, 4, 0]} barSize={16} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="no-data">No data to display</div>
+                  )}
+                </div>
+
+                <div className="chart-card">
+                  <div className="chart-title">Task Status</div>
+                  <div className="chart-subtitle">Overall breakdown</div>
+                  {pieData.length > 0 ? (
+                    <>
                       <ResponsiveContainer width="100%" height={220}>
                         <PieChart>
-                          <Pie data={statusTotals} cx="50%" cy="50%" innerRadius={55} outerRadius={85}
+                          <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={85}
                             paddingAngle={3} dataKey="value">
-                            {statusTotals.map((entry, i) => (
-                              <Cell key={i} fill={entry.color} />
+                            {pieData.map((entry, i) => (
+                              <Cell key={i} fill={entry.fill} />
                             ))}
                           </Pie>
                           <Tooltip content={<CustomTooltip />} />
                         </PieChart>
                       </ResponsiveContainer>
-                      <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 8 }}>
-                        {statusTotals.map(s => (
-                          <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, display: 'inline-block' }} />
-                            <span style={{ color: '#9ca0b0' }}>{s.name}</span>
-                            <span style={{ fontWeight: 600 }}>{s.value}</span>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 4 }}>
+                        {pieData.map(d => (
+                          <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: d.fill, display: 'inline-block' }} />
+                            <span style={{ color: '#94a3b8' }}>{d.name}</span>
+                            <span style={{ fontWeight: 600 }}>{d.value}</span>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  </div>
-                )}
+                    </>
+                  ) : (
+                    <div className="no-data">No data to display</div>
+                  )}
+                </div>
+              </div>
 
-                {/* Staff Sections */}
-                {staffGroups.length === 0 ? (
-                  <div className="empty-state">No tasks match your current filters.</div>
-                ) : (
-                  staffGroups.map(group => {
-                    const collapsed = collapsedStaff[group.name];
+              {/* Task List */}
+              <div className="task-list-card">
+                <div className="task-list-header">
+                  <span className="task-list-title">Tasks</span>
+                  <span className="task-count">{filteredTasks.length} tasks</span>
+                </div>
+                <div className="task-list">
+                  {sortedTasks.length > 0 ? sortedTasks.map(task => {
+                    const status = getTaskStatus(task);
+                    const dueDate = parseDate(task['due-date']);
                     return (
-                      <div key={group.name} className="staff-section">
-                        <div className="staff-header" onClick={() => toggleCollapse(group.name)}>
-                          <div className="staff-info">
-                            <div className="staff-avatar">{getInitials(group.name)}</div>
-                            <span className="staff-name">{group.name}</span>
-                            <div className="staff-badges">
-                              <span className="badge badge-total">{group.total} tasks</span>
-                              {group.overdue > 0 && <span className="badge badge-overdue">{group.overdue} overdue</span>}
-                              <span className="badge badge-active">{group.active} active</span>
-                              <span className="badge badge-complete">{group.complete} done</span>
-                            </div>
-                          </div>
-                          <span className={`collapse-icon ${collapsed ? 'collapsed' : ''}`}>▾</span>
+                      <div key={task.id} className="task-item">
+                        <div className="task-top">
+                          <span className={`task-status-icon ${status}`}>
+                            {status === 'complete' ? '✓' : status === 'overdue' ? '!' : '○'}
+                          </span>
+                          <span className="task-name">{task.content}</span>
                         </div>
-                        {!collapsed && (
-                          <table className="task-table">
-                            <thead>
-                              <tr>
-                                <th style={{ width: 30 }}></th>
-                                <th>Task</th>
-                                <th>Status</th>
-                                <th>Deadline</th>
-                                <th>Priority</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {group.tasks.map(task => {
-                                const status = getTaskStatus(task);
-                                const due = parseDate(task['due-date']);
-                                const dateClass = status === 'overdue' ? 'date-overdue'
-                                  : isUpcomingSoon(task) ? 'date-upcoming' : 'date-ok';
-                                const prio = (task.priority || '').toLowerCase();
-                                const prioClass = prio === 'high' ? 'priority-high'
-                                  : prio === 'medium' ? 'priority-medium'
-                                  : prio === 'low' ? 'priority-low' : 'priority-none';
-                                return (
-                                  <tr key={task.id}>
-                                    <td>
-                                      <span className={`priority-dot ${prioClass}`}
-                                        title={prio || 'none'} />
-                                    </td>
-                                    <td className="task-name-cell">
-                                      <div className="task-title">{task.content}</div>
-                                      <span className="task-project-tag">{task['project-name']}</span>
-                                    </td>
-                                    <td>
-                                      <span className={`status-badge status-${status}`}>
-                                        {status === 'complete' ? '✓ Done'
-                                          : status === 'overdue' ? '! Overdue'
-                                          : '○ Active'}
-                                      </span>
-                                    </td>
-                                    <td className="date-cell">
-                                      {due ? (
-                                        <span className={dateClass}>{formatDate(due)}</span>
-                                      ) : (
-                                        <span className="no-date">No deadline</span>
-                                      )}
-                                    </td>
-                                    <td style={{ fontSize: 12, color: '#9ca0b0', textTransform: 'capitalize' }}>
-                                      {prio || '—'}
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        )}
+                        <div className="task-meta">
+                          <span>📁 {task['project-name']}</span>
+                          {task['responsible-party-summary'] && (
+                            <span>👤 {task['responsible-party-summary']}</span>
+                          )}
+                          {dueDate && (
+                            <span style={{ color: status === 'overdue' ? '#ef4444' : '#64748b' }}>
+                              📅 {formatDate(dueDate)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     );
-                  })
-                )}
-              </>
-            )}
-          </div>
+                  }) : (
+                    <div className="no-data">No tasks match your filters</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="footer">
+                Connected to <span>9cloudwebworks.teamwork.com</span>
+                {lastUpdated && <> • Data synced {lastUpdated.toLocaleString()}</>}
+              </div>
+            </>
+          )}
         </div>
       );
     }
 
-    ReactDOM.render(<App />, document.getElementById('root'));
+    ReactDOM.render(<TeamworkDashboard />, document.getElementById('root'));
   </script>
 </body>
 </html>
