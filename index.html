@@ -227,6 +227,33 @@
       });
     }
 
+    // Fetch all pages for a paginated endpoint
+    async function fetchAllPages(endpoint, key, params = {}, onProgress) {
+      // Page 1 — get data + total page count
+      const first = await api(endpoint, { ...params, page: '1', pageSize: '250' });
+      let allItems = first[key] || [];
+      const totalPages = (first._pagination && first._pagination.pages) || 1;
+      if (onProgress) onProgress(1, totalPages);
+
+      if (totalPages <= 1) return allItems;
+
+      // Fetch remaining pages in batches of 5 to avoid rate limits
+      const batchSize = 5;
+      for (let start = 2; start <= totalPages; start += batchSize) {
+        const end = Math.min(start + batchSize - 1, totalPages);
+        const batch = [];
+        for (let p = start; p <= end; p++) {
+          batch.push(api(endpoint, { ...params, page: String(p), pageSize: '250' }));
+        }
+        const results = await Promise.all(batch);
+        results.forEach(r => {
+          allItems = allItems.concat(r[key] || []);
+        });
+        if (onProgress) onProgress(end, totalPages);
+      }
+      return allItems;
+    }
+
     function parseDate(str) {
       if (!str) return null;
       const clean = str.replace(/-/g, '');
@@ -246,7 +273,9 @@
       const [people, setPeople] = useState([]);
       const [tasks, setTasks] = useState([]);
       const [timeEntries, setTimeEntries] = useState([]);
-      const [loading, setLoading] = useState(true);
+      const [loading, setLoading] = useState(false);
+      const [loadingMsg, setLoadingMsg] = useState('');
+      const [dataLoaded, setDataLoaded] = useState(false);
       const [error, setError] = useState(null);
       const [lastUpdated, setLastUpdated] = useState(null);
 
@@ -260,26 +289,39 @@
         setLoading(true);
         setError(null);
         try {
-          const [projRes, peopleRes, tasksRes, timeRes] = await Promise.all([
-            api('projects.json', { status: 'active' }),
+          setLoadingMsg('Loading projects & staff...');
+          const [projRes, peopleRes] = await Promise.all([
+            api('projects.json', { status: 'active', pageSize: '250' }),
             api('people.json', { pageSize: '250' }),
-            api('tasks.json', { pageSize: '250', includeCompletedTasks: 'true' }),
-            api('time_entries.json', { pageSize: '250' }),
           ]);
-
           setProjects(projRes.projects || []);
           setPeople(peopleRes.people || []);
-          setTasks(tasksRes['todo-items'] || []);
-          setTimeEntries(timeRes['time-entries'] || []);
+
+          setLoadingMsg('Loading tasks...');
+          const allTasks = await fetchAllPages(
+            'tasks.json', 'todo-items', {},
+            (p, t) => setLoadingMsg(`Loading tasks... page ${p}/${t}`)
+          );
+          setTasks(allTasks);
+
+          setLoadingMsg('Loading time entries...');
+          const allTime = await fetchAllPages(
+            'time_entries.json', 'time-entries', {},
+            (p, t) => setLoadingMsg(`Loading time entries... page ${p}/${t}`)
+          );
+          setTimeEntries(allTime);
+
           setLastUpdated(new Date());
+          setDataLoaded(true);
         } catch (err) {
           setError(err.message);
         } finally {
           setLoading(false);
+          setLoadingMsg('');
         }
       }, []);
 
-      useEffect(() => { fetchData(); }, [fetchData]);
+      // No auto-fetch — user clicks "Load Data" to start
 
       // Active Staff (with tasks or hours)
       const activeStaff = useMemo(() => {
@@ -451,7 +493,7 @@
             <div className="header-actions">
               {lastUpdated && <span className="last-updated">Updated {lastUpdated.toLocaleTimeString()}</span>}
               <button className="btn btn-primary" onClick={fetchData} disabled={loading}>
-                {loading ? '⟳ Loading…' : '↻ Refresh'}
+                {loading ? '⟳ Loading…' : dataLoaded ? '↻ Refresh' : '▶ Load Data'}
               </button>
             </div>
           </div>
@@ -465,7 +507,17 @@
           {loading ? (
             <div className="loading-state">
               <div className="spinner" />
-              <div className="loading-text">Connecting to Teamwork…</div>
+              <div className="loading-text">{loadingMsg || 'Connecting to Teamwork…'}</div>
+            </div>
+          ) : !dataLoaded ? (
+            <div className="loading-state">
+              <div style={{fontSize: '48px', marginBottom: '16px'}}>📊</div>
+              <div className="loading-text" style={{marginBottom: '20px', fontSize: '16px', color: '#94a3b8'}}>
+                Click below to fetch all projects, tasks & time entries from Teamwork
+              </div>
+              <button className="btn btn-primary" onClick={fetchData} style={{fontSize: '16px', padding: '12px 32px'}}>
+                ▶ Load Dashboard Data
+              </button>
             </div>
           ) : (
             <>
