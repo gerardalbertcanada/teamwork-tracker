@@ -157,7 +157,8 @@
     .task-status-icon.complete { background: rgba(16,185,129,0.15); color: #10b981; }
     .task-status-icon.overdue { background: rgba(239,68,68,0.15); color: #ef4444; }
     .task-status-icon.active { background: rgba(6,182,212,0.15); color: #06b6d4; }
-    .task-name { font-size: 13px; font-weight: 500; }
+    .task-name { font-size: 13px; font-weight: 500; color: #06b6d4; text-decoration: none; }
+    .task-name:hover { text-decoration: underline; color: #22d3ee; }
     .task-meta {
       display: flex; gap: 12px; margin-top: 4px; margin-left: 32px;
       font-size: 11px; color: #64748b; flex-wrap: wrap;
@@ -622,7 +623,7 @@
                           <span className={`task-status-icon ${status}`}>
                             {status === 'complete' ? '✓' : status === 'overdue' ? '!' : '○'}
                           </span>
-                          <span className="task-name">{task.content}</span>
+                          <a className="task-name" href={`https://9cloudwebworks.teamwork.com/app/tasks/${task.id}`} target="_blank" rel="noopener noreferrer">{task.content}</a>
                         </div>
                         <div className="task-meta">
                           <span>📁 {task['project-name']}</span>
