@@ -79,12 +79,14 @@
     select, input[type="date"] {
       padding: 8px 12px; border-radius: 8px;
       border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.06);
+      background: #1a1f35;
       color: #e2e8f0; font-family: inherit; font-size: 13px;
       min-width: 180px; cursor: pointer;
     }
+    select option { background: #1a1f35; color: #e2e8f0; }
     select:focus, input[type="date"]:focus { outline: none; border-color: #06b6d4; }
     input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); }
+    input[type="date"] { color-scheme: dark; }
 
     .view-toggle {
       display: flex; background: rgba(255,255,255,0.06);
@@ -125,6 +127,7 @@
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 12px; overflow: hidden;
+      margin-bottom: 24px;
     }
     .task-list-header {
       padding: 16px 20px;
@@ -259,7 +262,7 @@
         try {
           const [projRes, peopleRes, tasksRes, timeRes] = await Promise.all([
             api('projects.json', { status: 'active' }),
-            api('people.json'),
+            api('people.json', { pageSize: '250' }),
             api('tasks.json', { pageSize: '250', includeCompletedTasks: 'true' }),
             api('time_entries.json', { pageSize: '250' }),
           ]);
@@ -505,7 +508,7 @@
                   <label className="filter-label">Staff</label>
                   <select value={selectedStaff} onChange={e => setSelectedStaff(e.target.value)}>
                     <option value="all">All Staff</option>
-                    {activeStaff.sort((a, b) => (a['first-name'] || '').localeCompare(b['first-name'] || '')).map(p => (
+                    {people.sort((a, b) => (a['first-name'] || '').localeCompare(b['first-name'] || '')).map(p => (
                       <option key={p.id} value={String(p.id)}>
                         {p['first-name']} {p['last-name'] || ''}
                       </option>
@@ -513,12 +516,12 @@
                   </select>
                 </div>
                 <div className="filter-group">
-                  <label className="filter-label">Due Date From</label>
+                  <label className="filter-label">Due Date (From)</label>
                   <input type="date" value={dateRange.start}
                     onChange={e => setDateRange(prev => ({ ...prev, start: e.target.value }))} />
                 </div>
                 <div className="filter-group">
-                  <label className="filter-label">Due Date To</label>
+                  <label className="filter-label">Due Date (To)</label>
                   <input type="date" value={dateRange.end}
                     onChange={e => setDateRange(prev => ({ ...prev, end: e.target.value }))} />
                 </div>
@@ -531,6 +534,43 @@
                   <button className={viewMode === 'project' ? 'active' : ''} onClick={() => setViewMode('project')}>
                     📁 By Project
                   </button>
+                </div>
+              </div>
+
+              {/* Task List */}
+              <div className="task-list-card">
+                <div className="task-list-header">
+                  <span className="task-list-title">Tasks</span>
+                  <span className="task-count">{filteredTasks.length} tasks</span>
+                </div>
+                <div className="task-list">
+                  {sortedTasks.length > 0 ? sortedTasks.map(task => {
+                    const status = getTaskStatus(task);
+                    const dueDate = parseDate(task['due-date']);
+                    return (
+                      <div key={task.id} className="task-item">
+                        <div className="task-top">
+                          <span className={`task-status-icon ${status}`}>
+                            {status === 'complete' ? '✓' : status === 'overdue' ? '!' : '○'}
+                          </span>
+                          <span className="task-name">{task.content}</span>
+                        </div>
+                        <div className="task-meta">
+                          <span>📁 {task['project-name']}</span>
+                          {task['responsible-party-summary'] && (
+                            <span>👤 {task['responsible-party-summary']}</span>
+                          )}
+                          {dueDate && (
+                            <span style={{ color: status === 'overdue' ? '#ef4444' : '#64748b' }}>
+                              📅 {formatDate(dueDate)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }) : (
+                    <div className="no-data">No tasks match your filters</div>
+                  )}
                 </div>
               </div>
 
@@ -585,43 +625,6 @@
                     </>
                   ) : (
                     <div className="no-data">No data to display</div>
-                  )}
-                </div>
-              </div>
-
-              {/* Task List */}
-              <div className="task-list-card">
-                <div className="task-list-header">
-                  <span className="task-list-title">Tasks</span>
-                  <span className="task-count">{filteredTasks.length} tasks</span>
-                </div>
-                <div className="task-list">
-                  {sortedTasks.length > 0 ? sortedTasks.map(task => {
-                    const status = getTaskStatus(task);
-                    const dueDate = parseDate(task['due-date']);
-                    return (
-                      <div key={task.id} className="task-item">
-                        <div className="task-top">
-                          <span className={`task-status-icon ${status}`}>
-                            {status === 'complete' ? '✓' : status === 'overdue' ? '!' : '○'}
-                          </span>
-                          <span className="task-name">{task.content}</span>
-                        </div>
-                        <div className="task-meta">
-                          <span>📁 {task['project-name']}</span>
-                          {task['responsible-party-summary'] && (
-                            <span>👤 {task['responsible-party-summary']}</span>
-                          )}
-                          {dueDate && (
-                            <span style={{ color: status === 'overdue' ? '#ef4444' : '#64748b' }}>
-                              📅 {formatDate(dueDate)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  }) : (
-                    <div className="no-data">No tasks match your filters</div>
                   )}
                 </div>
               </div>
