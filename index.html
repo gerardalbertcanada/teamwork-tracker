@@ -292,12 +292,12 @@
           // Always load projects & people first (lightweight, for filter dropdowns)
           if (projects.length === 0) {
             setLoadingMsg('Loading projects & staff...');
-            const [projRes, peopleRes] = await Promise.all([
+            const [projRes, allPeople] = await Promise.all([
               api('projects.json', { status: 'active', pageSize: '250' }),
-              api('people.json', { pageSize: '250' }),
+              fetchAllPages('people.json', 'people', {}),
             ]);
             setProjects(projRes.projects || []);
-            setPeople(peopleRes.people || []);
+            setPeople(allPeople);
           }
 
           setLoadingMsg('Loading tasks...');
@@ -328,12 +328,12 @@
       useEffect(() => {
         (async () => {
           try {
-            const [projRes, peopleRes] = await Promise.all([
+            const [projRes, allPeople] = await Promise.all([
               api('projects.json', { status: 'active', pageSize: '250' }),
-              api('people.json', { pageSize: '250' }),
+              fetchAllPages('people.json', 'people', {}),
             ]);
             setProjects(projRes.projects || []);
-            setPeople(peopleRes.people || []);
+            setPeople(allPeople);
           } catch (err) {
             setError(err.message);
           }
