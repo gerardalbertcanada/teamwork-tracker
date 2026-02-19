@@ -43,6 +43,12 @@ module.exports = async function handler(req, res) {
         response.on('end', () => {
           try {
             const json = JSON.parse(data);
+            // Forward Teamwork pagination headers as metadata
+            json._pagination = {
+              page: parseInt(response.headers['x-page']) || 1,
+              pages: parseInt(response.headers['x-pages']) || 1,
+              records: parseInt(response.headers['x-records']) || 0,
+            };
             res.status(response.statusCode).json(json);
           } catch {
             res.status(500).json({ error: 'Failed to parse response', raw: data.substring(0, 500) });
