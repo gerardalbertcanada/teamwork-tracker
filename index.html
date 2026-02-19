@@ -289,13 +289,16 @@
         setLoading(true);
         setError(null);
         try {
-          setLoadingMsg('Loading projects & staff...');
-          const [projRes, peopleRes] = await Promise.all([
-            api('projects.json', { status: 'active', pageSize: '250' }),
-            api('people.json', { pageSize: '250' }),
-          ]);
-          setProjects(projRes.projects || []);
-          setPeople(peopleRes.people || []);
+          // Always load projects & people first (lightweight, for filter dropdowns)
+          if (projects.length === 0) {
+            setLoadingMsg('Loading projects & staff...');
+            const [projRes, peopleRes] = await Promise.all([
+              api('projects.json', { status: 'active', pageSize: '250' }),
+              api('people.json', { pageSize: '250' }),
+            ]);
+            setProjects(projRes.projects || []);
+            setPeople(peopleRes.people || []);
+          }
 
           setLoadingMsg('Loading tasks...');
           const allTasks = await fetchAllPages(
@@ -319,9 +322,23 @@
           setLoading(false);
           setLoadingMsg('');
         }
-      }, []);
+      }, [projects.length]);
 
-      // No auto-fetch — user clicks "Load Data" to start
+      // Auto-load just projects & people on mount for filter dropdowns
+      useEffect(() => {
+        (async () => {
+          try {
+            const [projRes, peopleRes] = await Promise.all([
+              api('projects.json', { status: 'active', pageSize: '250' }),
+              api('people.json', { pageSize: '250' }),
+            ]);
+            setProjects(projRes.projects || []);
+            setPeople(peopleRes.people || []);
+          } catch (err) {
+            setError(err.message);
+          }
+        })();
+      }, []);
 
       // Active Staff (with tasks or hours)
       const activeStaff = useMemo(() => {
@@ -492,9 +509,6 @@
             </div>
             <div className="header-actions">
               {lastUpdated && <span className="last-updated">Updated {lastUpdated.toLocaleTimeString()}</span>}
-              <button className="btn btn-primary" onClick={fetchData} disabled={loading}>
-                {loading ? '⟳ Loading…' : dataLoaded ? '↻ Refresh' : '▶ Load Data'}
-              </button>
             </div>
           </div>
 
@@ -504,20 +518,67 @@
             </div>
           )}
 
+          {/* Filters — always visible */}
+          <div className="filters">
+            <div className="filter-group">
+              <label className="filter-label">Project</label>
+              <select value={selectedProject} onChange={e => setSelectedProject(e.target.value)}>
+                <option value="all">All Projects</option>
+                {projects.sort((a, b) => (a.name || '').localeCompare(b.name || '')).map(p => (
+                  <option key={p.id} value={String(p.id)}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="filter-group">
+              <label className="filter-label">Staff</label>
+              <select value={selectedStaff} onChange={e => setSelectedStaff(e.target.value)}>
+                <option value="all">All Staff</option>
+                {people.sort((a, b) => (a['first-name'] || '').localeCompare(b['first-name'] || '')).map(p => (
+                  <option key={p.id} value={String(p.id)}>
+                    {p['first-name']} {p['last-name'] || ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="filter-group">
+              <label className="filter-label">Due Date (From)</label>
+              <input type="date" value={dateRange.start}
+                onChange={e => setDateRange(prev => ({ ...prev, start: e.target.value }))} />
+            </div>
+            <div className="filter-group">
+              <label className="filter-label">Due Date (To)</label>
+              <input type="date" value={dateRange.end}
+                onChange={e => setDateRange(prev => ({ ...prev, end: e.target.value }))} />
+            </div>
+            {hasFilters && <button className="filter-reset" onClick={resetFilters}>✕ Clear filters</button>}
+
+            <div className="filter-group" style={{justifyContent: 'flex-end'}}>
+              <button className="btn btn-primary" onClick={fetchData} disabled={loading}
+                style={{padding: '8px 20px', whiteSpace: 'nowrap'}}>
+                {loading ? '⟳ Loading…' : dataLoaded ? '↻ Refresh' : '▶ Load Data'}
+              </button>
+            </div>
+
+            {dataLoaded && (
+              <div className="view-toggle">
+                <button className={viewMode === 'staff' ? 'active' : ''} onClick={() => setViewMode('staff')}>
+                  👤 By Staff
+                </button>
+                <button className={viewMode === 'project' ? 'active' : ''} onClick={() => setViewMode('project')}>
+                  📁 By Project
+                </button>
+              </div>
+            )}
+          </div>
+
           {loading ? (
             <div className="loading-state">
               <div className="spinner" />
               <div className="loading-text">{loadingMsg || 'Connecting to Teamwork…'}</div>
             </div>
           ) : !dataLoaded ? (
-            <div className="loading-state">
-              <div style={{fontSize: '48px', marginBottom: '16px'}}>📊</div>
-              <div className="loading-text" style={{marginBottom: '20px', fontSize: '16px', color: '#94a3b8'}}>
-                Click below to fetch all projects, tasks & time entries from Teamwork
-              </div>
-              <button className="btn btn-primary" onClick={fetchData} style={{fontSize: '16px', padding: '12px 32px'}}>
-                ▶ Load Dashboard Data
-              </button>
+            <div className="loading-state" style={{opacity: 0.6}}>
+              <div className="loading-text">Select your filters and click <strong>Load Data</strong> to begin</div>
             </div>
           ) : (
             <>
@@ -542,50 +603,6 @@
                 <div className="stat-card">
                   <div className="stat-value purple">{stats.totalHours.toFixed(1)}h</div>
                   <div className="stat-label">Hours Logged</div>
-                </div>
-              </div>
-
-              {/* Filters */}
-              <div className="filters">
-                <div className="filter-group">
-                  <label className="filter-label">Project</label>
-                  <select value={selectedProject} onChange={e => setSelectedProject(e.target.value)}>
-                    <option value="all">All Projects</option>
-                    {projects.sort((a, b) => (a.name || '').localeCompare(b.name || '')).map(p => (
-                      <option key={p.id} value={String(p.id)}>{p.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="filter-group">
-                  <label className="filter-label">Staff</label>
-                  <select value={selectedStaff} onChange={e => setSelectedStaff(e.target.value)}>
-                    <option value="all">All Staff</option>
-                    {people.sort((a, b) => (a['first-name'] || '').localeCompare(b['first-name'] || '')).map(p => (
-                      <option key={p.id} value={String(p.id)}>
-                        {p['first-name']} {p['last-name'] || ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="filter-group">
-                  <label className="filter-label">Due Date (From)</label>
-                  <input type="date" value={dateRange.start}
-                    onChange={e => setDateRange(prev => ({ ...prev, start: e.target.value }))} />
-                </div>
-                <div className="filter-group">
-                  <label className="filter-label">Due Date (To)</label>
-                  <input type="date" value={dateRange.end}
-                    onChange={e => setDateRange(prev => ({ ...prev, end: e.target.value }))} />
-                </div>
-                {hasFilters && <button className="filter-reset" onClick={resetFilters}>✕ Clear filters</button>}
-
-                <div className="view-toggle">
-                  <button className={viewMode === 'staff' ? 'active' : ''} onClick={() => setViewMode('staff')}>
-                    👤 By Staff
-                  </button>
-                  <button className={viewMode === 'project' ? 'active' : ''} onClick={() => setViewMode('project')}>
-                    📁 By Project
-                  </button>
                 </div>
               </div>
 
