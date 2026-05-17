@@ -284,6 +284,7 @@
       const [selectedProject, setSelectedProject] = useState('all');
       const [selectedStaff, setSelectedStaff] = useState('all');
       const [dateRange, setDateRange] = useState({ start: '', end: '' });
+      const [workloadDateRange, setWorkloadDateRange] = useState({ start: '', end: '' });
 
       const fetchData = useCallback(async () => {
         setLoading(true);
@@ -377,6 +378,29 @@
         });
       }, [timeEntries, selectedProject, selectedStaff, dateRange]);
 
+      // Workload chart uses its OWN date range based on actual time entry dates
+      const workloadTimeEntries = useMemo(() => {
+        return timeEntries.filter(entry => {
+          if (selectedProject !== 'all' && String(entry['project-id']) !== selectedProject) return false;
+          if (selectedStaff !== 'all' && String(entry['person-id']) !== selectedStaff) return false;
+          if (workloadDateRange.start && entry.date && new Date(entry.date) < new Date(workloadDateRange.start)) return false;
+          if (workloadDateRange.end && entry.date && new Date(entry.date) > new Date(workloadDateRange.end + 'T23:59:59')) return false;
+          return true;
+        });
+      }, [timeEntries, selectedProject, selectedStaff, workloadDateRange]);
+
+      // Workload chart tasks: respect project/staff filters but ignore due-date range (the workload date filter is about actual hours logged)
+      const workloadTasks = useMemo(() => {
+        return tasks.filter(task => {
+          if (selectedProject !== 'all' && String(task['project-id']) !== selectedProject) return false;
+          if (selectedStaff !== 'all') {
+            const ids = (task['responsible-party-ids'] || '').split(',');
+            if (!ids.includes(selectedStaff)) return false;
+          }
+          return true;
+        });
+      }, [tasks, selectedProject, selectedStaff]);
+
       // Stats
       const stats = useMemo(() => {
         const total = filteredTasks.length;
@@ -402,12 +426,12 @@
               tasks: 0, hours: 0,
             };
           });
-          filteredTasks.forEach(task => {
+          workloadTasks.forEach(task => {
             (task['responsible-party-ids'] || '').split(',').forEach(id => {
               if (map[id]) map[id].tasks++;
             });
           });
-          filteredTimeEntries.forEach(entry => {
+          workloadTimeEntries.forEach(entry => {
             const pid = String(entry['person-id']);
             if (map[pid]) map[pid].hours += parseFloat(entry.hoursDecimal) || 0;
           });
@@ -424,11 +448,11 @@
               tasks: 0, hours: 0,
             };
           });
-          filteredTasks.forEach(task => {
+          workloadTasks.forEach(task => {
             const pid = String(task['project-id']);
             if (map[pid]) map[pid].tasks++;
           });
-          filteredTimeEntries.forEach(entry => {
+          workloadTimeEntries.forEach(entry => {
             const pid = String(entry['project-id']);
             if (map[pid]) map[pid].hours += parseFloat(entry.hoursDecimal) || 0;
           });
@@ -437,7 +461,7 @@
             .sort((a, b) => b.hours - a.hours)
             .map(d => ({ ...d, hours: Math.round(d.hours * 10) / 10 }));
         }
-      }, [viewMode, activeStaff, projects, filteredTasks, filteredTimeEntries]);
+      }, [viewMode, activeStaff, projects, workloadTasks, workloadTimeEntries]);
 
       // Pie Data
       const pieData = useMemo(() => {
@@ -606,43 +630,6 @@
                 </div>
               </div>
 
-              {/* Task List */}
-              <div className="task-list-card">
-                <div className="task-list-header">
-                  <span className="task-list-title">Tasks</span>
-                  <span className="task-count">{filteredTasks.length} tasks</span>
-                </div>
-                <div className="task-list">
-                  {sortedTasks.length > 0 ? sortedTasks.map(task => {
-                    const status = getTaskStatus(task);
-                    const dueDate = parseDate(task['due-date']);
-                    return (
-                      <div key={task.id} className="task-item">
-                        <div className="task-top">
-                          <span className={`task-status-icon ${status}`}>
-                            {status === 'complete' ? '✓' : status === 'overdue' ? '!' : '○'}
-                          </span>
-                          <span className="task-name">{task.content}</span>
-                        </div>
-                        <div className="task-meta">
-                          <span>📁 {task['project-name']}</span>
-                          {task['responsible-party-summary'] && (
-                            <span>👤 {task['responsible-party-summary']}</span>
-                          )}
-                          {dueDate && (
-                            <span style={{ color: status === 'overdue' ? '#ef4444' : '#64748b' }}>
-                              📅 {formatDate(dueDate)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  }) : (
-                    <div className="no-data">No tasks match your filters</div>
-                  )}
-                </div>
-              </div>
-
               {/* Charts */}
               <div className="charts-row">
                 <div className="chart-card">
@@ -650,6 +637,26 @@
                     {viewMode === 'staff' ? 'Workload by Staff' : 'Workload by Project'}
                   </div>
                   <div className="chart-subtitle">Tasks & hours logged</div>
+
+                  {/* Workload-only date filter (based on actual time entry dates) */}
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div className="filter-group">
+                      <label className="filter-label">Hours Logged From</label>
+                      <input type="date" value={workloadDateRange.start}
+                        onChange={e => setWorkloadDateRange(prev => ({ ...prev, start: e.target.value }))} />
+                    </div>
+                    <div className="filter-group">
+                      <label className="filter-label">Hours Logged To</label>
+                      <input type="date" value={workloadDateRange.end}
+                        onChange={e => setWorkloadDateRange(prev => ({ ...prev, end: e.target.value }))} />
+                    </div>
+                    {(workloadDateRange.start || workloadDateRange.end) && (
+                      <button className="filter-reset" onClick={() => setWorkloadDateRange({ start: '', end: '' })}>
+                        ✕ Clear
+                      </button>
+                    )}
+                  </div>
+
                   {workloadData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={Math.max(280, workloadData.length * 44)}>
                       <BarChart data={workloadData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
@@ -694,6 +701,43 @@
                     </>
                   ) : (
                     <div className="no-data">No data to display</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Task List */}
+              <div className="task-list-card">
+                <div className="task-list-header">
+                  <span className="task-list-title">Tasks</span>
+                  <span className="task-count">{filteredTasks.length} tasks</span>
+                </div>
+                <div className="task-list">
+                  {sortedTasks.length > 0 ? sortedTasks.map(task => {
+                    const status = getTaskStatus(task);
+                    const dueDate = parseDate(task['due-date']);
+                    return (
+                      <div key={task.id} className="task-item">
+                        <div className="task-top">
+                          <span className={`task-status-icon ${status}`}>
+                            {status === 'complete' ? '✓' : status === 'overdue' ? '!' : '○'}
+                          </span>
+                          <span className="task-name">{task.content}</span>
+                        </div>
+                        <div className="task-meta">
+                          <span>📁 {task['project-name']}</span>
+                          {task['responsible-party-summary'] && (
+                            <span>👤 {task['responsible-party-summary']}</span>
+                          )}
+                          {dueDate && (
+                            <span style={{ color: status === 'overdue' ? '#ef4444' : '#64748b' }}>
+                              📅 {formatDate(dueDate)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }) : (
+                    <div className="no-data">No tasks match your filters</div>
                   )}
                 </div>
               </div>
