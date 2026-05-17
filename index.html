@@ -168,8 +168,8 @@
           const [projectsData, peopleData, tasksData, timeData] = await Promise.all([
             fetchTeamworkData('projects.json'),
             fetchTeamworkData('people.json'),
-            fetchTeamworkData('tasks.json?pageSize=500'),
-            fetchTeamworkData('time_entries.json?pageSize=500')
+            fetchTeamworkData('tasks.json?pageSize=250'),
+            fetchTeamworkData('time_entries.json?pageSize=250')
           ]);
 
           setData({
