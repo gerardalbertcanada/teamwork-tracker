@@ -31,10 +31,10 @@
     
     /* TABS */
     .tabs-container { display: flex; gap: 8px; margin-bottom: 24px; }
-    .tab-btn { padding: 14px 28px; border: none; border-radius: 12px; background: rgba(30, 41, 59, 0.5); color: #94a3b8; cursor: pointer; font-size: 15px; font-weight: 600; font-family: inherit; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; }
+    .tab-btn { padding: 14px 32px; border: none; border-radius: 12px; background: rgba(30, 41, 59, 0.5); color: #94a3b8; cursor: pointer; font-size: 15px; font-weight: 600; font-family: inherit; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(99, 102, 241, 0.1); }
     .tab-btn:hover { color: #e2e8f0; background: rgba(30, 41, 59, 0.8); }
-    .tab-btn.active { background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%); color: white; box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3); }
-    .tab-icon { font-size: 20px; }
+    .tab-btn.active { background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%); color: white; box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3); border-color: transparent; }
+    .tab-icon { font-size: 18px; }
     
     .filters-card { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(99, 102, 241, 0.15); padding: 24px; margin-bottom: 24px; }
     .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
@@ -118,11 +118,6 @@
     
     .refresh-btn { padding: 10px 20px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 10px; color: #06b6d4; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
     .refresh-btn:hover { background: rgba(99, 102, 241, 0.2); }
-    
-    /* Hours Tab Specific */
-    .hours-summary { display: flex; align-items: center; gap: 32px; margin-bottom: 24px; padding: 24px; background: rgba(6, 182, 212, 0.1); border-radius: 16px; border: 1px solid rgba(6, 182, 212, 0.2); }
-    .hours-total { font-size: 48px; font-weight: 700; color: #06b6d4; }
-    .hours-label { font-size: 14px; color: #94a3b8; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -150,15 +145,9 @@
       const [lastUpdated, setLastUpdated] = useState(null);
       
       // Active tab
-      const [activeTab, setActiveTab] = useState('hours');
+      const [activeTab, setActiveTab] = useState('tasks');
       
-      // Hours tab filters
-      const [hoursViewMode, setHoursViewMode] = useState('staff');
-      const [hoursProject, setHoursProject] = useState('all');
-      const [hoursStaff, setHoursStaff] = useState('all');
-      const [hoursDateRange, setHoursDateRange] = useState({ start: '', end: '' });
-      
-      // Tasks tab filters (original)
+      // Shared filters
       const [viewMode, setViewMode] = useState('staff');
       const [selectedProject, setSelectedProject] = useState('all');
       const [selectedStaff, setSelectedStaff] = useState('all');
@@ -193,51 +182,8 @@
       useEffect(() => { loadData(); }, []);
 
       const { projects, people, tasks, timeEntries } = data;
-      
-      // Limit staff to 7 for selection
-      const staffList = people.slice(0, 7);
 
-      // ===== HOURS TAB DATA =====
-      const filteredTimeEntries = useMemo(() => timeEntries.filter(entry => {
-        if (hoursProject !== 'all' && String(entry['project-id']) !== hoursProject) return false;
-        if (hoursStaff !== 'all' && String(entry['person-id']) !== hoursStaff) return false;
-        if (hoursDateRange.start && entry.date) {
-          if (new Date(entry.date) < new Date(hoursDateRange.start)) return false;
-        }
-        if (hoursDateRange.end && entry.date) {
-          if (new Date(entry.date) > new Date(hoursDateRange.end)) return false;
-        }
-        return true;
-      }), [timeEntries, hoursProject, hoursStaff, hoursDateRange]);
-
-      const hoursWorkloadData = useMemo(() => {
-        if (hoursViewMode === 'staff') {
-          const staffData = {};
-          staffList.forEach(person => {
-            staffData[person.id] = { name: person['first-name'], fullName: person['full-name'], hours: 0 };
-          });
-          filteredTimeEntries.forEach(entry => {
-            if (staffData[entry['person-id']]) {
-              staffData[entry['person-id']].hours += parseFloat(entry.hoursDecimal) || 0;
-            }
-          });
-          return Object.values(staffData).filter(d => d.hours > 0).sort((a, b) => b.hours - a.hours);
-        } else {
-          const projectData = {};
-          projects.forEach(proj => {
-            projectData[proj.id] = { name: proj.name?.length > 25 ? proj.name.substring(0, 25) + '...' : proj.name, fullName: proj.name, hours: 0 };
-          });
-          filteredTimeEntries.forEach(entry => {
-            const projId = String(entry['project-id']);
-            if (projectData[projId]) projectData[projId].hours += parseFloat(entry.hoursDecimal) || 0;
-          });
-          return Object.values(projectData).filter(d => d.hours > 0).sort((a, b) => b.hours - a.hours).slice(0, 12);
-        }
-      }, [hoursViewMode, staffList, projects, filteredTimeEntries]);
-
-      const totalHours = filteredTimeEntries.reduce((sum, e) => sum + (parseFloat(e.hoursDecimal) || 0), 0);
-
-      // ===== TASKS TAB DATA (original logic) =====
+      // Filter tasks (original logic)
       const filteredTasks = useMemo(() => tasks.filter(task => {
         if (selectedProject !== 'all' && String(task['project-id']) !== selectedProject) return false;
         if (selectedStaff !== 'all' && !(task['responsible-party-ids'] || '').includes(selectedStaff)) return false;
@@ -252,23 +198,32 @@
         return true;
       }), [tasks, selectedProject, selectedStaff, dateRange]);
 
-      const filteredTaskTimeEntries = useMemo(() => timeEntries.filter(entry => {
+      // Filter time entries (with date filter for Hours tab)
+      const filteredTimeEntries = useMemo(() => timeEntries.filter(entry => {
         if (selectedProject !== 'all' && String(entry['project-id']) !== selectedProject) return false;
-        if (selectedStaff !== 'all' && entry['person-id'] !== selectedStaff) return false;
+        if (selectedStaff !== 'all' && String(entry['person-id']) !== selectedStaff) return false;
+        // Date filter applies to hours
+        if (dateRange.start && entry.date) {
+          if (new Date(entry.date) < new Date(dateRange.start)) return false;
+        }
+        if (dateRange.end && entry.date) {
+          if (new Date(entry.date) > new Date(dateRange.end)) return false;
+        }
         return true;
-      }), [timeEntries, selectedProject, selectedStaff]);
+      }), [timeEntries, selectedProject, selectedStaff, dateRange]);
 
+      // Workload data (original logic)
       const workloadData = useMemo(() => {
         if (viewMode === 'staff') {
           const staffData = {};
-          staffList.forEach(person => {
+          people.forEach(person => {
             staffData[person.id] = { name: person['first-name'], fullName: person['full-name'], tasks: 0, hours: 0 };
           });
           filteredTasks.forEach(task => {
             const ids = (task['responsible-party-ids'] || '').split(',');
             ids.forEach(id => { if (staffData[id]) staffData[id].tasks++; });
           });
-          filteredTaskTimeEntries.forEach(entry => {
+          filteredTimeEntries.forEach(entry => {
             if (staffData[entry['person-id']]) staffData[entry['person-id']].hours += parseFloat(entry.hoursDecimal) || 0;
           });
           return Object.values(staffData).filter(d => d.tasks > 0 || d.hours > 0).sort((a, b) => b.hours - a.hours);
@@ -281,13 +236,13 @@
             const projId = String(task['project-id']);
             if (projectData[projId]) projectData[projId].tasks++;
           });
-          filteredTaskTimeEntries.forEach(entry => {
+          filteredTimeEntries.forEach(entry => {
             const projId = String(entry['project-id']);
             if (projectData[projId]) projectData[projId].hours += parseFloat(entry.hoursDecimal) || 0;
           });
           return Object.values(projectData).filter(d => d.tasks > 0 || d.hours > 0).sort((a, b) => b.hours - a.hours).slice(0, 12);
         }
-      }, [viewMode, staffList, projects, filteredTasks, filteredTaskTimeEntries]);
+      }, [viewMode, people, projects, filteredTasks, filteredTimeEntries]);
 
       const tasksByStatus = useMemo(() => ({
         completed: filteredTasks.filter(t => t.completed).length,
@@ -299,7 +254,7 @@
         }).length
       }), [filteredTasks]);
 
-      const taskTotalHours = filteredTaskTimeEntries.reduce((sum, e) => sum + (parseFloat(e.hoursDecimal) || 0), 0);
+      const totalHours = filteredTimeEntries.reduce((sum, e) => sum + (parseFloat(e.hoursDecimal) || 0), 0);
 
       const pieData = [
         { name: 'Completed', value: tasksByStatus.completed, color: '#10b981' },
@@ -345,7 +300,7 @@
                   <span className="stat-label">Projects</span>
                 </div>
                 <div className="stat-badge">
-                  <span className="stat-number">{staffList.length}</span>
+                  <span className="stat-number">{people.length}</span>
                   <span className="stat-label">Staff</span>
                 </div>
                 <button className="refresh-btn" onClick={loadData}>🔄 Refresh</button>
@@ -356,141 +311,59 @@
           <div className="main-content">
             {/* TABS */}
             <div className="tabs-container">
-              <button className={`tab-btn ${activeTab === 'hours' ? 'active' : ''}`} onClick={() => setActiveTab('hours')}>
-                <span className="tab-icon">⏱️</span> Hours
-              </button>
               <button className={`tab-btn ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}>
                 <span className="tab-icon">📋</span> Tasks
               </button>
+              <button className={`tab-btn ${activeTab === 'hours' ? 'active' : ''}`} onClick={() => setActiveTab('hours')}>
+                <span className="tab-icon">⏱️</span> Hours
+              </button>
             </div>
 
-            {/* HOURS TAB */}
-            {activeTab === 'hours' && (
-              <>
-                <div className="filters-card">
-                  <div className="filters-grid">
-                    <div className="filter-group">
-                      <label className="filter-label">View By</label>
-                      <div className="toggle-group">
-                        <button className={`toggle-btn ${hoursViewMode === 'project' ? 'active' : ''}`} onClick={() => setHoursViewMode('project')}>📁 Project</button>
-                        <button className={`toggle-btn ${hoursViewMode === 'staff' ? 'active' : ''}`} onClick={() => setHoursViewMode('staff')}>👤 Staff</button>
-                      </div>
-                    </div>
-
-                    <div className="filter-group">
-                      <label className="filter-label">Project</label>
-                      <select className="select" value={hoursProject} onChange={(e) => setHoursProject(e.target.value)}>
-                        <option value="all">All Projects</option>
-                        {projects.filter(p => p.status === 'active').map(proj => (
-                          <option key={proj.id} value={proj.id}>{proj.name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="filter-group">
-                      <label className="filter-label">Staff Member</label>
-                      <select className="select" value={hoursStaff} onChange={(e) => setHoursStaff(e.target.value)}>
-                        <option value="all">All Staff</option>
-                        {staffList.map(person => (
-                          <option key={person.id} value={person.id}>{person['full-name']}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="filter-group">
-                      <label className="filter-label">Date Range</label>
-                      <div className="date-inputs">
-                        <input type="date" className="date-input" value={hoursDateRange.start} onChange={(e) => setHoursDateRange(prev => ({ ...prev, start: e.target.value }))} />
-                        <span className="date-separator">→</span>
-                        <input type="date" className="date-input" value={hoursDateRange.end} onChange={(e) => setHoursDateRange(prev => ({ ...prev, end: e.target.value }))} />
-                      </div>
-                    </div>
+            {/* FILTERS (shared) */}
+            <div className="filters-card">
+              <div className="filters-grid">
+                <div className="filter-group">
+                  <label className="filter-label">View By</label>
+                  <div className="toggle-group">
+                    <button className={`toggle-btn ${viewMode === 'project' ? 'active' : ''}`} onClick={() => setViewMode('project')}>📁 Project</button>
+                    <button className={`toggle-btn ${viewMode === 'staff' ? 'active' : ''}`} onClick={() => setViewMode('staff')}>👤 Staff</button>
                   </div>
                 </div>
 
-                {/* Hours Summary */}
-                <div className="hours-summary">
-                  <div>
-                    <div className="hours-total">{totalHours.toFixed(1)}h</div>
-                    <div className="hours-label">Total Hours Logged</div>
-                  </div>
+                <div className="filter-group">
+                  <label className="filter-label">Project</label>
+                  <select className="select" value={selectedProject} onChange={(e) => setSelectedProject(e.target.value)}>
+                    <option value="all">All Projects</option>
+                    {projects.filter(p => p.status === 'active').map(proj => (
+                      <option key={proj.id} value={proj.id}>{proj.name}</option>
+                    ))}
+                  </select>
                 </div>
 
-                {/* Hours Chart */}
-                <div className="card">
-                  <h3 className="card-title">📊 Hours by {hoursViewMode === 'staff' ? 'Staff Member' : 'Project'}</h3>
-                  <div className="chart-container">
-                    {hoursWorkloadData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={hoursWorkloadData} layout="vertical" margin={{ top: 10, right: 30, left: 120, bottom: 10 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(99, 102, 241, 0.1)" horizontal={true} vertical={false} />
-                          <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} axisLine={{ stroke: 'rgba(99, 102, 241, 0.2)' }} />
-                          <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={13} width={110} tickLine={false} axisLine={false} />
-                          <Tooltip
-                            contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '12px', color: '#f1f5f9', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}
-                            formatter={(value) => [`${value.toFixed(1)} hours`, '⏱️ Hours']}
-                            labelFormatter={(label, payload) => payload[0]?.payload?.fullName || label}
-                            cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
-                          />
-                          <Bar dataKey="hours" radius={[0, 8, 8, 0]} barSize={28}>
-                            {hoursWorkloadData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="no-data">No hours logged for selected filters</div>
-                    )}
+                <div className="filter-group">
+                  <label className="filter-label">Staff Member</label>
+                  <select className="select" value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value)}>
+                    <option value="all">All Staff</option>
+                    {people.map(person => (
+                      <option key={person.id} value={person.id}>{person['full-name']}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="filter-group">
+                  <label className="filter-label">Date Range</label>
+                  <div className="date-inputs">
+                    <input type="date" className="date-input" value={dateRange.start} onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))} />
+                    <span className="date-separator">→</span>
+                    <input type="date" className="date-input" value={dateRange.end} onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))} />
                   </div>
                 </div>
-              </>
-            )}
+              </div>
+            </div>
 
             {/* TASKS TAB (Original) */}
             {activeTab === 'tasks' && (
               <>
-                <div className="filters-card">
-                  <div className="filters-grid">
-                    <div className="filter-group">
-                      <label className="filter-label">View By</label>
-                      <div className="toggle-group">
-                        <button className={`toggle-btn ${viewMode === 'project' ? 'active' : ''}`} onClick={() => setViewMode('project')}>📁 Project</button>
-                        <button className={`toggle-btn ${viewMode === 'staff' ? 'active' : ''}`} onClick={() => setViewMode('staff')}>👤 Staff</button>
-                      </div>
-                    </div>
-
-                    <div className="filter-group">
-                      <label className="filter-label">Project</label>
-                      <select className="select" value={selectedProject} onChange={(e) => setSelectedProject(e.target.value)}>
-                        <option value="all">All Projects</option>
-                        {projects.filter(p => p.status === 'active').map(proj => (
-                          <option key={proj.id} value={proj.id}>{proj.name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="filter-group">
-                      <label className="filter-label">Staff Member</label>
-                      <select className="select" value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value)}>
-                        <option value="all">All Staff</option>
-                        {staffList.map(person => (
-                          <option key={person.id} value={person.id}>{person['full-name']}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="filter-group">
-                      <label className="filter-label">Date Range</label>
-                      <div className="date-inputs">
-                        <input type="date" className="date-input" value={dateRange.start} onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))} />
-                        <span className="date-separator">→</span>
-                        <input type="date" className="date-input" value={dateRange.end} onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 <div className="stats-row">
                   <div className="stats-card cyan">
                     <div className="stats-icon">📋</div>
@@ -510,7 +383,7 @@
                   </div>
                   <div className="stats-card purple">
                     <div className="stats-icon">⏱️</div>
-                    <div><div className="stats-value">{taskTotalHours.toFixed(1)}h</div><div className="stats-label">Hours Logged</div></div>
+                    <div><div className="stats-value">{totalHours.toFixed(1)}h</div><div className="stats-label">Hours Logged</div></div>
                   </div>
                 </div>
 
@@ -594,6 +467,49 @@
                       })}
                       {filteredTasks.length === 0 && <div className="no-data">No tasks match your filters</div>}
                     </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* HOURS TAB (Original layout with date filter) */}
+            {activeTab === 'hours' && (
+              <>
+                <div className="stats-row">
+                  <div className="stats-card purple" style={{gridColumn: 'span 2'}}>
+                    <div className="stats-icon">⏱️</div>
+                    <div><div className="stats-value">{totalHours.toFixed(1)}h</div><div className="stats-label">Total Hours Logged</div></div>
+                  </div>
+                </div>
+
+                <div className="card">
+                  <h3 className="card-title">📊 Hours by {viewMode === 'staff' ? 'Staff Member' : 'Project'}</h3>
+                  <div className="chart-container">
+                    {workloadData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={workloadData} layout="vertical" margin={{ top: 10, right: 30, left: 120, bottom: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(99, 102, 241, 0.1)" horizontal={true} vertical={false} />
+                          <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} axisLine={{ stroke: 'rgba(99, 102, 241, 0.2)' }} />
+                          <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={13} width={110} tickLine={false} axisLine={false} />
+                          <Tooltip
+                            contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '12px', color: '#f1f5f9', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}
+                            formatter={(value) => [`${value.toFixed(1)} hours`, '⏱️ Hours']}
+                            labelFormatter={(label, payload) => payload[0]?.payload?.fullName || label}
+                            cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
+                          />
+                          <Bar dataKey="hours" radius={[0, 8, 8, 0]} barSize={28}>
+                            {workloadData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="no-data">No hours logged for selected filters</div>
+                    )}
+                  </div>
+                  <div className="chart-legend">
+                    <span className="legend-item"><span className="legend-dot" style={{background: '#06b6d4'}}></span>Hours Logged</span>
                   </div>
                 </div>
               </>
