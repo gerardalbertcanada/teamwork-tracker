@@ -111,7 +111,7 @@
 
     /* Charts */
     .charts-row {
-      display: grid; grid-template-columns: 1fr 320px; gap: 16px;
+      display: grid; grid-template-columns: 1fr; gap: 16px;
       margin-bottom: 24px;
     }
     .chart-card {
@@ -415,6 +415,11 @@
         return { total, completed, active, overdue, totalHours };
       }, [filteredTasks, filteredTimeEntries]);
 
+      // Hours total for Workload section (follows the Workload date filter)
+      const workloadTotalHours = useMemo(() => {
+        return workloadTimeEntries.reduce((sum, e) => sum + (parseFloat(e.hoursDecimal) || 0), 0);
+      }, [workloadTimeEntries]);
+
       // Workload Chart Data
       const workloadData = useMemo(() => {
         if (viewMode === 'staff') {
@@ -624,19 +629,23 @@
                   <div className="stat-value red">{stats.overdue}</div>
                   <div className="stat-label">Overdue</div>
                 </div>
-                <div className="stat-card">
-                  <div className="stat-value purple">{stats.totalHours.toFixed(1)}h</div>
-                  <div className="stat-label">Hours Logged</div>
-                </div>
               </div>
 
               {/* Charts */}
               <div className="charts-row">
                 <div className="chart-card">
-                  <div className="chart-title">
-                    {viewMode === 'staff' ? 'Workload by Staff' : 'Workload by Project'}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+                    <div>
+                      <div className="chart-title">
+                        {viewMode === 'staff' ? 'Workload by Staff' : 'Workload by Project'}
+                      </div>
+                      <div className="chart-subtitle">Hours logged</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div className="stat-value purple" style={{ fontSize: 24 }}>{workloadTotalHours.toFixed(1)}h</div>
+                      <div className="stat-label">Hours Logged</div>
+                    </div>
                   </div>
-                  <div className="chart-subtitle">Tasks & hours logged</div>
 
                   {/* Workload-only date filter (based on actual time entry dates) */}
                   <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -658,47 +667,15 @@
                   </div>
 
                   {workloadData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={Math.max(280, workloadData.length * 44)}>
+                    <ResponsiveContainer width="100%" height={Math.max(280, workloadData.length * 40)}>
                       <BarChart data={workloadData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
                         <XAxis type="number" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
                         <YAxis type="category" dataKey="name" width={120}
                           tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(6,182,212,0.06)' }} />
-                        <Bar dataKey="hours" name="Hours" fill="#8b5cf6" radius={[0, 4, 4, 0]} barSize={16} />
-                        <Bar dataKey="tasks" name="Tasks" fill="#06b6d4" radius={[0, 4, 4, 0]} barSize={16} />
+                        <Bar dataKey="hours" name="Hours" fill="#8b5cf6" radius={[0, 4, 4, 0]} barSize={22} />
                       </BarChart>
                     </ResponsiveContainer>
-                  ) : (
-                    <div className="no-data">No data to display</div>
-                  )}
-                </div>
-
-                <div className="chart-card">
-                  <div className="chart-title">Task Status</div>
-                  <div className="chart-subtitle">Overall breakdown</div>
-                  {pieData.length > 0 ? (
-                    <>
-                      <ResponsiveContainer width="100%" height={220}>
-                        <PieChart>
-                          <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={85}
-                            paddingAngle={3} dataKey="value">
-                            {pieData.map((entry, i) => (
-                              <Cell key={i} fill={entry.fill} />
-                            ))}
-                          </Pie>
-                          <Tooltip content={<CustomTooltip />} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 4 }}>
-                        {pieData.map(d => (
-                          <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: d.fill, display: 'inline-block' }} />
-                            <span style={{ color: '#94a3b8' }}>{d.name}</span>
-                            <span style={{ fontWeight: 600 }}>{d.value}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </>
                   ) : (
                     <div className="no-data">No data to display</div>
                   )}
