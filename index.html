@@ -152,6 +152,7 @@
       const [selectedProject, setSelectedProject] = useState('all');
       const [selectedStaff, setSelectedStaff] = useState('all');
       const [dateRange, setDateRange] = useState({ start: '', end: '' });
+      const [workloadDateRange, setWorkloadDateRange] = useState({ start: '', end: '' });
 
       const loadData = async () => {
         setLoading(true);
@@ -212,6 +213,34 @@
         return true;
       }), [timeEntries, selectedProject, selectedStaff, dateRange]);
 
+      // Workload-specific filtered tasks (uses its own date range)
+      const workloadFilteredTasks = useMemo(() => tasks.filter(task => {
+        if (selectedProject !== 'all' && String(task['project-id']) !== selectedProject) return false;
+        if (selectedStaff !== 'all' && !(task['responsible-party-ids'] || '').includes(selectedStaff)) return false;
+        if (workloadDateRange.start && task['due-date']) {
+          const dueDate = new Date(task['due-date'].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'));
+          if (dueDate < new Date(workloadDateRange.start)) return false;
+        }
+        if (workloadDateRange.end && task['due-date']) {
+          const dueDate = new Date(task['due-date'].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'));
+          if (dueDate > new Date(workloadDateRange.end)) return false;
+        }
+        return true;
+      }), [tasks, selectedProject, selectedStaff, workloadDateRange]);
+
+      // Workload-specific filtered time entries (uses its own date range)
+      const workloadFilteredTimeEntries = useMemo(() => timeEntries.filter(entry => {
+        if (selectedProject !== 'all' && String(entry['project-id']) !== selectedProject) return false;
+        if (selectedStaff !== 'all' && String(entry['person-id']) !== selectedStaff) return false;
+        if (workloadDateRange.start && entry.date) {
+          if (new Date(entry.date) < new Date(workloadDateRange.start)) return false;
+        }
+        if (workloadDateRange.end && entry.date) {
+          if (new Date(entry.date) > new Date(workloadDateRange.end)) return false;
+        }
+        return true;
+      }), [timeEntries, selectedProject, selectedStaff, workloadDateRange]);
+
       // Workload data (original logic)
       const workloadData = useMemo(() => {
         if (viewMode === 'staff') {
@@ -219,11 +248,11 @@
           people.forEach(person => {
             staffData[person.id] = { name: person['first-name'], fullName: person['full-name'], tasks: 0, hours: 0 };
           });
-          filteredTasks.forEach(task => {
+          workloadFilteredTasks.forEach(task => {
             const ids = (task['responsible-party-ids'] || '').split(',');
             ids.forEach(id => { if (staffData[id]) staffData[id].tasks++; });
           });
-          filteredTimeEntries.forEach(entry => {
+          workloadFilteredTimeEntries.forEach(entry => {
             if (staffData[entry['person-id']]) staffData[entry['person-id']].hours += parseFloat(entry.hoursDecimal) || 0;
           });
           return Object.values(staffData).filter(d => d.tasks > 0 || d.hours > 0).sort((a, b) => b.hours - a.hours);
@@ -232,17 +261,17 @@
           projects.forEach(proj => {
             projectData[proj.id] = { name: proj.name?.length > 25 ? proj.name.substring(0, 25) + '...' : proj.name, fullName: proj.name, tasks: 0, hours: 0 };
           });
-          filteredTasks.forEach(task => {
+          workloadFilteredTasks.forEach(task => {
             const projId = String(task['project-id']);
             if (projectData[projId]) projectData[projId].tasks++;
           });
-          filteredTimeEntries.forEach(entry => {
+          workloadFilteredTimeEntries.forEach(entry => {
             const projId = String(entry['project-id']);
             if (projectData[projId]) projectData[projId].hours += parseFloat(entry.hoursDecimal) || 0;
           });
           return Object.values(projectData).filter(d => d.tasks > 0 || d.hours > 0).sort((a, b) => b.hours - a.hours).slice(0, 12);
         }
-      }, [viewMode, people, projects, filteredTasks, filteredTimeEntries]);
+      }, [viewMode, people, projects, workloadFilteredTasks, workloadFilteredTimeEntries]);
 
       const tasksByStatus = useMemo(() => ({
         completed: filteredTasks.filter(t => t.completed).length,
@@ -390,6 +419,17 @@
                 <div className="content-grid">
                   <div className="card">
                     <h3 className="card-title">📊 Workload by {viewMode === 'staff' ? 'Staff Member' : 'Project'}</h3>
+                    <div className="filter-group" style={{marginBottom: '20px'}}>
+                      <label className="filter-label">Date Range</label>
+                      <div className="date-inputs" style={{maxWidth: '420px'}}>
+                        <input type="date" className="date-input" value={workloadDateRange.start} onChange={(e) => setWorkloadDateRange(prev => ({ ...prev, start: e.target.value }))} />
+                        <span className="date-separator">→</span>
+                        <input type="date" className="date-input" value={workloadDateRange.end} onChange={(e) => setWorkloadDateRange(prev => ({ ...prev, end: e.target.value }))} />
+                        {(workloadDateRange.start || workloadDateRange.end) && (
+                          <button className="refresh-btn" style={{padding: '8px 14px', fontSize: '12px'}} onClick={() => setWorkloadDateRange({ start: '', end: '' })}>Clear</button>
+                        )}
+                      </div>
+                    </div>
                     <div className="chart-container">
                       {workloadData.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
