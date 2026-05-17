@@ -29,54 +29,56 @@
     
     .main-content { max-width: 1600px; margin: 0 auto; padding: 24px 32px; }
     
-    .section-card { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(99, 102, 241, 0.15); padding: 24px; margin-bottom: 24px; }
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px; }
-    .section-title { font-size: 20px; font-weight: 700; color: #f1f5f9; display: flex; align-items: center; gap: 12px; }
-    .section-title .icon { font-size: 28px; }
-    .total-hours { font-size: 36px; font-weight: 700; color: #06b6d4; }
-    .total-hours-label { font-size: 13px; color: #64748b; }
+    /* TABS */
+    .tabs-container { display: flex; gap: 8px; margin-bottom: 24px; }
+    .tab-btn { padding: 14px 28px; border: none; border-radius: 12px; background: rgba(30, 41, 59, 0.5); color: #94a3b8; cursor: pointer; font-size: 15px; font-weight: 600; font-family: inherit; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; }
+    .tab-btn:hover { color: #e2e8f0; background: rgba(30, 41, 59, 0.8); }
+    .tab-btn.active { background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%); color: white; box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3); }
+    .tab-icon { font-size: 20px; }
     
-    .filters-row { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
-    .filter-group { display: flex; flex-direction: column; gap: 8px; }
+    .filters-card { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(99, 102, 241, 0.15); padding: 24px; margin-bottom: 24px; }
+    .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+    .filter-group { display: flex; flex-direction: column; gap: 10px; }
     .filter-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
     .toggle-group { display: flex; background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 4px; border: 1px solid rgba(99, 102, 241, 0.1); }
-    .toggle-btn { flex: 1; padding: 10px 16px; border: none; border-radius: 10px; background: transparent; color: #64748b; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s ease; font-family: inherit; white-space: nowrap; }
+    .toggle-btn { flex: 1; padding: 12px 20px; border: none; border-radius: 10px; background: transparent; color: #64748b; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease; font-family: inherit; }
     .toggle-btn:hover { color: #e2e8f0; }
     .toggle-btn.active { background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%); color: white; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3); }
-    .select { padding: 10px 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 10px; color: #e2e8f0; font-size: 13px; cursor: pointer; outline: none; min-width: 180px; font-family: inherit; transition: all 0.2s; }
+    .select { padding: 12px 16px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; color: #e2e8f0; font-size: 14px; cursor: pointer; outline: none; width: 100%; font-family: inherit; transition: all 0.2s; }
     .select:hover, .select:focus { border-color: #06b6d4; }
     .select option { background: #1e293b; color: #e2e8f0; }
     .date-inputs { display: flex; align-items: center; gap: 8px; }
-    .date-input { padding: 10px 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 10px; color: #e2e8f0; font-size: 13px; outline: none; font-family: inherit; }
+    .date-input { flex: 1; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; color: #e2e8f0; font-size: 13px; outline: none; font-family: inherit; }
     .date-input:hover, .date-input:focus { border-color: #06b6d4; }
     .date-separator { color: #64748b; font-size: 12px; }
     
-    .chart-container { height: 400px; }
-    .chart-legend { display: flex; justify-content: center; gap: 24px; margin-top: 16px; flex-wrap: wrap; }
-    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #94a3b8; }
-    .legend-dot { width: 12px; height: 12px; border-radius: 4px; }
-    
-    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-    @media (max-width: 1000px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 600px) { .stats-row { grid-template-columns: 1fr; } }
+    .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+    @media (max-width: 1200px) { .stats-row { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 768px) { .stats-row { grid-template-columns: repeat(2, 1fr); } .header-content { justify-content: center; text-align: center; } .logo-section { flex-direction: column; } }
     .stats-card { display: flex; align-items: center; gap: 16px; padding: 20px; background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(99, 102, 241, 0.1); transition: all 0.3s ease; }
     .stats-card:hover { transform: translateY(-2px); border-color: rgba(99, 102, 241, 0.3); }
     .stats-card.cyan { border-left: 4px solid #06b6d4; }
     .stats-card.green { border-left: 4px solid #10b981; }
     .stats-card.amber { border-left: 4px solid #f59e0b; }
     .stats-card.red { border-left: 4px solid #ef4444; }
-    .stats-icon { font-size: 32px; }
-    .stats-value { font-size: 28px; font-weight: 700; color: #f1f5f9; }
+    .stats-card.purple { border-left: 4px solid #8b5cf6; }
+    .stats-icon { font-size: 32px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+    .stats-value { font-size: 32px; font-weight: 700; color: #f1f5f9; }
     .stats-label { font-size: 12px; color: #64748b; margin-top: 2px; }
     
-    .content-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
-    @media (max-width: 1000px) { .content-grid { grid-template-columns: 1fr; } }
+    .content-grid { display: grid; grid-template-columns: 1fr 420px; gap: 24px; }
+    @media (max-width: 1100px) { .content-grid { grid-template-columns: 1fr; } }
     
     .card { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(99, 102, 241, 0.1); padding: 24px; }
     .card-title { font-size: 16px; font-weight: 600; color: #f1f5f9; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
     .task-count { font-size: 11px; padding: 4px 12px; background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%); color: white; border-radius: 20px; font-weight: 600; }
     
-    .task-list { display: flex; flex-direction: column; gap: 12px; max-height: 500px; overflow-y: auto; padding-right: 8px; }
+    .chart-container { height: 380px; }
+    .chart-legend { display: flex; justify-content: center; gap: 24px; margin-top: 16px; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #94a3b8; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 4px; }
+    
+    .task-list { display: flex; flex-direction: column; gap: 12px; max-height: 440px; overflow-y: auto; padding-right: 8px; }
     .task-list::-webkit-scrollbar { width: 6px; }
     .task-list::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.3); border-radius: 3px; }
     .task-list::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 3px; }
@@ -93,14 +95,14 @@
     .task-assignee, .task-due { font-size: 12px; color: #94a3b8; }
     .no-data { display: flex; align-items: center; justify-content: center; height: 200px; color: #64748b; font-size: 14px; }
     
-    .pie-section { display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 20px; }
-    .pie-container { width: 120px; height: 120px; }
+    .footer { text-align: center; padding: 24px; color: #475569; font-size: 13px; border-top: 1px solid rgba(99, 102, 241, 0.1); margin-top: 32px; }
+    .footer span { color: #06b6d4; }
+    
+    .pie-section { display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 24px; }
+    .pie-container { width: 140px; height: 140px; }
     .pie-legend { display: flex; flex-direction: column; gap: 8px; }
     .pie-legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #94a3b8; }
     .pie-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
-    
-    .footer { text-align: center; padding: 24px; color: #475569; font-size: 13px; border-top: 1px solid rgba(99, 102, 241, 0.1); margin-top: 32px; }
-    .footer span { color: #06b6d4; }
     
     .loading-container { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #0c1222 0%, #1a1f35 100%); color: #94a3b8; }
     .spinner { width: 56px; height: 56px; border: 4px solid rgba(99, 102, 241, 0.2); border-top: 4px solid #06b6d4; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
@@ -117,14 +119,10 @@
     .refresh-btn { padding: 10px 20px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 10px; color: #06b6d4; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
     .refresh-btn:hover { background: rgba(99, 102, 241, 0.2); }
     
-    @media (max-width: 768px) {
-      .header-content { justify-content: center; text-align: center; }
-      .logo-section { flex-direction: column; }
-      .section-header { flex-direction: column; align-items: flex-start; }
-      .filters-row { width: 100%; }
-      .filter-group { width: 100%; }
-      .select { width: 100%; }
-    }
+    /* Hours Tab Specific */
+    .hours-summary { display: flex; align-items: center; gap: 32px; margin-bottom: 24px; padding: 24px; background: rgba(6, 182, 212, 0.1); border-radius: 16px; border: 1px solid rgba(6, 182, 212, 0.2); }
+    .hours-total { font-size: 48px; font-weight: 700; color: #06b6d4; }
+    .hours-label { font-size: 14px; color: #94a3b8; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -151,15 +149,20 @@
       const [error, setError] = useState(null);
       const [lastUpdated, setLastUpdated] = useState(null);
       
-      // Hours section filters
-      const [viewMode, setViewMode] = useState('staff');
+      // Active tab
+      const [activeTab, setActiveTab] = useState('hours');
+      
+      // Hours tab filters
+      const [hoursViewMode, setHoursViewMode] = useState('staff');
       const [hoursProject, setHoursProject] = useState('all');
       const [hoursStaff, setHoursStaff] = useState('all');
       const [hoursDateRange, setHoursDateRange] = useState({ start: '', end: '' });
       
-      // Tasks section filters
-      const [tasksProject, setTasksProject] = useState('all');
-      const [tasksStaff, setTasksStaff] = useState('all');
+      // Tasks tab filters (original)
+      const [viewMode, setViewMode] = useState('staff');
+      const [selectedProject, setSelectedProject] = useState('all');
+      const [selectedStaff, setSelectedStaff] = useState('all');
+      const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
       const loadData = async () => {
         setLoading(true);
@@ -190,8 +193,11 @@
       useEffect(() => { loadData(); }, []);
 
       const { projects, people, tasks, timeEntries } = data;
+      
+      // Limit staff to 7 for selection
+      const staffList = people.slice(0, 7);
 
-      // Filter time entries for hours section (with date filter)
+      // ===== HOURS TAB DATA =====
       const filteredTimeEntries = useMemo(() => timeEntries.filter(entry => {
         if (hoursProject !== 'all' && String(entry['project-id']) !== hoursProject) return false;
         if (hoursStaff !== 'all' && String(entry['person-id']) !== hoursStaff) return false;
@@ -204,11 +210,10 @@
         return true;
       }), [timeEntries, hoursProject, hoursStaff, hoursDateRange]);
 
-      // Workload data for chart
-      const workloadData = useMemo(() => {
-        if (viewMode === 'staff') {
+      const hoursWorkloadData = useMemo(() => {
+        if (hoursViewMode === 'staff') {
           const staffData = {};
-          people.forEach(person => {
+          staffList.forEach(person => {
             staffData[person.id] = { name: person['first-name'], fullName: person['full-name'], hours: 0 };
           });
           filteredTimeEntries.forEach(entry => {
@@ -220,24 +225,69 @@
         } else {
           const projectData = {};
           projects.forEach(proj => {
-            projectData[proj.id] = { name: proj.name?.length > 30 ? proj.name.substring(0, 30) + '...' : proj.name, fullName: proj.name, hours: 0 };
+            projectData[proj.id] = { name: proj.name?.length > 25 ? proj.name.substring(0, 25) + '...' : proj.name, fullName: proj.name, hours: 0 };
           });
           filteredTimeEntries.forEach(entry => {
             const projId = String(entry['project-id']);
             if (projectData[projId]) projectData[projId].hours += parseFloat(entry.hoursDecimal) || 0;
           });
-          return Object.values(projectData).filter(d => d.hours > 0).sort((a, b) => b.hours - a.hours).slice(0, 15);
+          return Object.values(projectData).filter(d => d.hours > 0).sort((a, b) => b.hours - a.hours).slice(0, 12);
         }
-      }, [viewMode, people, projects, filteredTimeEntries]);
+      }, [hoursViewMode, staffList, projects, filteredTimeEntries]);
 
       const totalHours = filteredTimeEntries.reduce((sum, e) => sum + (parseFloat(e.hoursDecimal) || 0), 0);
 
-      // Filter tasks for tasks section
+      // ===== TASKS TAB DATA (original logic) =====
       const filteredTasks = useMemo(() => tasks.filter(task => {
-        if (tasksProject !== 'all' && String(task['project-id']) !== tasksProject) return false;
-        if (tasksStaff !== 'all' && !(task['responsible-party-ids'] || '').includes(tasksStaff)) return false;
+        if (selectedProject !== 'all' && String(task['project-id']) !== selectedProject) return false;
+        if (selectedStaff !== 'all' && !(task['responsible-party-ids'] || '').includes(selectedStaff)) return false;
+        if (dateRange.start && task['due-date']) {
+          const dueDate = new Date(task['due-date'].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'));
+          if (dueDate < new Date(dateRange.start)) return false;
+        }
+        if (dateRange.end && task['due-date']) {
+          const dueDate = new Date(task['due-date'].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'));
+          if (dueDate > new Date(dateRange.end)) return false;
+        }
         return true;
-      }), [tasks, tasksProject, tasksStaff]);
+      }), [tasks, selectedProject, selectedStaff, dateRange]);
+
+      const filteredTaskTimeEntries = useMemo(() => timeEntries.filter(entry => {
+        if (selectedProject !== 'all' && String(entry['project-id']) !== selectedProject) return false;
+        if (selectedStaff !== 'all' && entry['person-id'] !== selectedStaff) return false;
+        return true;
+      }), [timeEntries, selectedProject, selectedStaff]);
+
+      const workloadData = useMemo(() => {
+        if (viewMode === 'staff') {
+          const staffData = {};
+          staffList.forEach(person => {
+            staffData[person.id] = { name: person['first-name'], fullName: person['full-name'], tasks: 0, hours: 0 };
+          });
+          filteredTasks.forEach(task => {
+            const ids = (task['responsible-party-ids'] || '').split(',');
+            ids.forEach(id => { if (staffData[id]) staffData[id].tasks++; });
+          });
+          filteredTaskTimeEntries.forEach(entry => {
+            if (staffData[entry['person-id']]) staffData[entry['person-id']].hours += parseFloat(entry.hoursDecimal) || 0;
+          });
+          return Object.values(staffData).filter(d => d.tasks > 0 || d.hours > 0).sort((a, b) => b.hours - a.hours);
+        } else {
+          const projectData = {};
+          projects.forEach(proj => {
+            projectData[proj.id] = { name: proj.name?.length > 25 ? proj.name.substring(0, 25) + '...' : proj.name, fullName: proj.name, tasks: 0, hours: 0 };
+          });
+          filteredTasks.forEach(task => {
+            const projId = String(task['project-id']);
+            if (projectData[projId]) projectData[projId].tasks++;
+          });
+          filteredTaskTimeEntries.forEach(entry => {
+            const projId = String(entry['project-id']);
+            if (projectData[projId]) projectData[projId].hours += parseFloat(entry.hoursDecimal) || 0;
+          });
+          return Object.values(projectData).filter(d => d.tasks > 0 || d.hours > 0).sort((a, b) => b.hours - a.hours).slice(0, 12);
+        }
+      }, [viewMode, staffList, projects, filteredTasks, filteredTaskTimeEntries]);
 
       const tasksByStatus = useMemo(() => ({
         completed: filteredTasks.filter(t => t.completed).length,
@@ -248,6 +298,8 @@
           return due < new Date();
         }).length
       }), [filteredTasks]);
+
+      const taskTotalHours = filteredTaskTimeEntries.reduce((sum, e) => sum + (parseFloat(e.hoursDecimal) || 0), 0);
 
       const pieData = [
         { name: 'Completed', value: tasksByStatus.completed, color: '#10b981' },
@@ -293,7 +345,7 @@
                   <span className="stat-label">Projects</span>
                 </div>
                 <div className="stat-badge">
-                  <span className="stat-number">{people.length}</span>
+                  <span className="stat-number">{staffList.length}</span>
                   <span className="stat-label">Staff</span>
                 </div>
                 <button className="refresh-btn" onClick={loadData}>🔄 Refresh</button>
@@ -302,193 +354,250 @@
           </header>
 
           <div className="main-content">
-            {/* HOURS SECTION - ON TOP */}
-            <div className="section-card">
-              <div className="section-header">
-                <div className="section-title">
-                  <span className="icon">⏱️</span>
-                  <span>Hours Logged</span>
-                  <div style={{marginLeft: '20px'}}>
-                    <div className="total-hours">{totalHours.toFixed(1)}h</div>
-                    <div className="total-hours-label">Total Hours</div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Hours Filters */}
-              <div className="filters-row" style={{marginBottom: '24px'}}>
-                <div className="filter-group">
-                  <label className="filter-label">View By</label>
-                  <div className="toggle-group">
-                    <button className={`toggle-btn ${viewMode === 'staff' ? 'active' : ''}`} onClick={() => setViewMode('staff')}>👤 Staff</button>
-                    <button className={`toggle-btn ${viewMode === 'project' ? 'active' : ''}`} onClick={() => setViewMode('project')}>📁 Project</button>
-                  </div>
-                </div>
-
-                <div className="filter-group">
-                  <label className="filter-label">Project</label>
-                  <select className="select" value={hoursProject} onChange={(e) => setHoursProject(e.target.value)}>
-                    <option value="all">All Projects</option>
-                    {projects.filter(p => p.status === 'active').map(proj => (
-                      <option key={proj.id} value={proj.id}>{proj.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="filter-group">
-                  <label className="filter-label">Staff Member</label>
-                  <select className="select" value={hoursStaff} onChange={(e) => setHoursStaff(e.target.value)}>
-                    <option value="all">All Staff</option>
-                    {people.map(person => (
-                      <option key={person.id} value={person.id}>{person['full-name']}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="filter-group">
-                  <label className="filter-label">Date Range</label>
-                  <div className="date-inputs">
-                    <input type="date" className="date-input" value={hoursDateRange.start} onChange={(e) => setHoursDateRange(prev => ({ ...prev, start: e.target.value }))} />
-                    <span className="date-separator">→</span>
-                    <input type="date" className="date-input" value={hoursDateRange.end} onChange={(e) => setHoursDateRange(prev => ({ ...prev, end: e.target.value }))} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Hours Chart */}
-              <div className="chart-container">
-                {workloadData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={workloadData} layout="vertical" margin={{ top: 10, right: 30, left: 140, bottom: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(99, 102, 241, 0.1)" horizontal={true} vertical={false} />
-                      <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} axisLine={{ stroke: 'rgba(99, 102, 241, 0.2)' }} />
-                      <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={13} width={130} tickLine={false} axisLine={false} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '12px', color: '#f1f5f9', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}
-                        formatter={(value) => [`${value.toFixed(1)} hours`, '⏱️ Hours']}
-                        labelFormatter={(label, payload) => payload[0]?.payload?.fullName || label}
-                        cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
-                      />
-                      <Bar dataKey="hours" radius={[0, 8, 8, 0]} barSize={28}>
-                        {workloadData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="no-data">No hours logged for selected filters</div>
-                )}
-              </div>
+            {/* TABS */}
+            <div className="tabs-container">
+              <button className={`tab-btn ${activeTab === 'hours' ? 'active' : ''}`} onClick={() => setActiveTab('hours')}>
+                <span className="tab-icon">⏱️</span> Hours
+              </button>
+              <button className={`tab-btn ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}>
+                <span className="tab-icon">📋</span> Tasks
+              </button>
             </div>
 
-            {/* TASKS SECTION */}
-            <div className="section-card">
-              <div className="section-header">
-                <div className="section-title">
-                  <span className="icon">📋</span>
-                  <span>Tasks Overview</span>
-                </div>
-                
-                {/* Tasks Filters */}
-                <div className="filters-row">
-                  <div className="filter-group">
-                    <label className="filter-label">Project</label>
-                    <select className="select" value={tasksProject} onChange={(e) => setTasksProject(e.target.value)}>
-                      <option value="all">All Projects</option>
-                      {projects.filter(p => p.status === 'active').map(proj => (
-                        <option key={proj.id} value={proj.id}>{proj.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="filter-group">
-                    <label className="filter-label">Staff Member</label>
-                    <select className="select" value={tasksStaff} onChange={(e) => setTasksStaff(e.target.value)}>
-                      <option value="all">All Staff</option>
-                      {people.map(person => (
-                        <option key={person.id} value={person.id}>{person['full-name']}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Task Stats */}
-              <div className="stats-row">
-                <div className="stats-card cyan">
-                  <div className="stats-icon">📋</div>
-                  <div><div className="stats-value">{filteredTasks.length}</div><div className="stats-label">Total Tasks</div></div>
-                </div>
-                <div className="stats-card green">
-                  <div className="stats-icon">✅</div>
-                  <div><div className="stats-value">{tasksByStatus.completed}</div><div className="stats-label">Completed</div></div>
-                </div>
-                <div className="stats-card amber">
-                  <div className="stats-icon">⏳</div>
-                  <div><div className="stats-value">{tasksByStatus.active - tasksByStatus.overdue}</div><div className="stats-label">In Progress</div></div>
-                </div>
-                <div className="stats-card red">
-                  <div className="stats-icon">🚨</div>
-                  <div><div className="stats-value">{tasksByStatus.overdue}</div><div className="stats-label">Overdue</div></div>
-                </div>
-              </div>
-
-              {/* Tasks Content */}
-              <div className="content-grid">
-                <div className="card">
-                  <h3 className="card-title">📝 Task List <span className="task-count">{filteredTasks.length}</span></h3>
-                  <div className="task-list">
-                    {filteredTasks.slice(0, 20).map((task) => {
-                      const isOverdue = task['due-date'] && !task.completed && new Date(task['due-date'].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) < new Date();
-                      return (
-                        <div key={task.id} className="task-item">
-                          <div className="task-header">
-                            <span className={`task-status ${task.completed ? 'complete' : isOverdue ? 'overdue' : 'active'}`}>
-                              {task.completed ? '✓' : isOverdue ? '!' : '○'}
-                            </span>
-                            <span className="task-name">{task.content}</span>
-                          </div>
-                          <div className="task-meta">
-                            <span className="task-project">{task['project-name']}</span>
-                            {task['responsible-party-summary'] && <span className="task-assignee">👤 {task['responsible-party-summary']}</span>}
-                            {task['due-date'] && <span className="task-due">📅 {task['due-date'].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')}</span>}
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {filteredTasks.length === 0 && <div className="no-data">No tasks match your filters</div>}
-                  </div>
-                </div>
-
-                <div className="card">
-                  <h3 className="card-title">📊 Status Breakdown</h3>
-                  {pieData.length > 0 && (
-                    <div className="pie-section" style={{flexDirection: 'column', gap: '16px'}}>
-                      <div className="pie-container" style={{width: '180px', height: '180px'}}>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
-                              {pieData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} />
-                              ))}
-                            </Pie>
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-                      <div className="pie-legend">
-                        {pieData.map((item, i) => (
-                          <div key={i} className="pie-legend-item">
-                            <span className="pie-legend-dot" style={{background: item.color}}></span>
-                            {item.name}: {item.value}
-                          </div>
-                        ))}
+            {/* HOURS TAB */}
+            {activeTab === 'hours' && (
+              <>
+                <div className="filters-card">
+                  <div className="filters-grid">
+                    <div className="filter-group">
+                      <label className="filter-label">View By</label>
+                      <div className="toggle-group">
+                        <button className={`toggle-btn ${hoursViewMode === 'project' ? 'active' : ''}`} onClick={() => setHoursViewMode('project')}>📁 Project</button>
+                        <button className={`toggle-btn ${hoursViewMode === 'staff' ? 'active' : ''}`} onClick={() => setHoursViewMode('staff')}>👤 Staff</button>
                       </div>
                     </div>
-                  )}
+
+                    <div className="filter-group">
+                      <label className="filter-label">Project</label>
+                      <select className="select" value={hoursProject} onChange={(e) => setHoursProject(e.target.value)}>
+                        <option value="all">All Projects</option>
+                        {projects.filter(p => p.status === 'active').map(proj => (
+                          <option key={proj.id} value={proj.id}>{proj.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="filter-group">
+                      <label className="filter-label">Staff Member</label>
+                      <select className="select" value={hoursStaff} onChange={(e) => setHoursStaff(e.target.value)}>
+                        <option value="all">All Staff</option>
+                        {staffList.map(person => (
+                          <option key={person.id} value={person.id}>{person['full-name']}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="filter-group">
+                      <label className="filter-label">Date Range</label>
+                      <div className="date-inputs">
+                        <input type="date" className="date-input" value={hoursDateRange.start} onChange={(e) => setHoursDateRange(prev => ({ ...prev, start: e.target.value }))} />
+                        <span className="date-separator">→</span>
+                        <input type="date" className="date-input" value={hoursDateRange.end} onChange={(e) => setHoursDateRange(prev => ({ ...prev, end: e.target.value }))} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+
+                {/* Hours Summary */}
+                <div className="hours-summary">
+                  <div>
+                    <div className="hours-total">{totalHours.toFixed(1)}h</div>
+                    <div className="hours-label">Total Hours Logged</div>
+                  </div>
+                </div>
+
+                {/* Hours Chart */}
+                <div className="card">
+                  <h3 className="card-title">📊 Hours by {hoursViewMode === 'staff' ? 'Staff Member' : 'Project'}</h3>
+                  <div className="chart-container">
+                    {hoursWorkloadData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={hoursWorkloadData} layout="vertical" margin={{ top: 10, right: 30, left: 120, bottom: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(99, 102, 241, 0.1)" horizontal={true} vertical={false} />
+                          <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} axisLine={{ stroke: 'rgba(99, 102, 241, 0.2)' }} />
+                          <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={13} width={110} tickLine={false} axisLine={false} />
+                          <Tooltip
+                            contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '12px', color: '#f1f5f9', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}
+                            formatter={(value) => [`${value.toFixed(1)} hours`, '⏱️ Hours']}
+                            labelFormatter={(label, payload) => payload[0]?.payload?.fullName || label}
+                            cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
+                          />
+                          <Bar dataKey="hours" radius={[0, 8, 8, 0]} barSize={28}>
+                            {hoursWorkloadData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="no-data">No hours logged for selected filters</div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* TASKS TAB (Original) */}
+            {activeTab === 'tasks' && (
+              <>
+                <div className="filters-card">
+                  <div className="filters-grid">
+                    <div className="filter-group">
+                      <label className="filter-label">View By</label>
+                      <div className="toggle-group">
+                        <button className={`toggle-btn ${viewMode === 'project' ? 'active' : ''}`} onClick={() => setViewMode('project')}>📁 Project</button>
+                        <button className={`toggle-btn ${viewMode === 'staff' ? 'active' : ''}`} onClick={() => setViewMode('staff')}>👤 Staff</button>
+                      </div>
+                    </div>
+
+                    <div className="filter-group">
+                      <label className="filter-label">Project</label>
+                      <select className="select" value={selectedProject} onChange={(e) => setSelectedProject(e.target.value)}>
+                        <option value="all">All Projects</option>
+                        {projects.filter(p => p.status === 'active').map(proj => (
+                          <option key={proj.id} value={proj.id}>{proj.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="filter-group">
+                      <label className="filter-label">Staff Member</label>
+                      <select className="select" value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value)}>
+                        <option value="all">All Staff</option>
+                        {staffList.map(person => (
+                          <option key={person.id} value={person.id}>{person['full-name']}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="filter-group">
+                      <label className="filter-label">Date Range</label>
+                      <div className="date-inputs">
+                        <input type="date" className="date-input" value={dateRange.start} onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))} />
+                        <span className="date-separator">→</span>
+                        <input type="date" className="date-input" value={dateRange.end} onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="stats-row">
+                  <div className="stats-card cyan">
+                    <div className="stats-icon">📋</div>
+                    <div><div className="stats-value">{filteredTasks.length}</div><div className="stats-label">Total Tasks</div></div>
+                  </div>
+                  <div className="stats-card green">
+                    <div className="stats-icon">✅</div>
+                    <div><div className="stats-value">{tasksByStatus.completed}</div><div className="stats-label">Completed</div></div>
+                  </div>
+                  <div className="stats-card amber">
+                    <div className="stats-icon">⏳</div>
+                    <div><div className="stats-value">{tasksByStatus.active - tasksByStatus.overdue}</div><div className="stats-label">In Progress</div></div>
+                  </div>
+                  <div className="stats-card red">
+                    <div className="stats-icon">🚨</div>
+                    <div><div className="stats-value">{tasksByStatus.overdue}</div><div className="stats-label">Overdue</div></div>
+                  </div>
+                  <div className="stats-card purple">
+                    <div className="stats-icon">⏱️</div>
+                    <div><div className="stats-value">{taskTotalHours.toFixed(1)}h</div><div className="stats-label">Hours Logged</div></div>
+                  </div>
+                </div>
+
+                <div className="content-grid">
+                  <div className="card">
+                    <h3 className="card-title">📊 Workload by {viewMode === 'staff' ? 'Staff Member' : 'Project'}</h3>
+                    <div className="chart-container">
+                      {workloadData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={workloadData} layout="vertical" margin={{ top: 10, right: 30, left: 120, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(99, 102, 241, 0.1)" horizontal={true} vertical={false} />
+                            <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} axisLine={{ stroke: 'rgba(99, 102, 241, 0.2)' }} />
+                            <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={13} width={110} tickLine={false} axisLine={false} />
+                            <Tooltip
+                              contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '12px', color: '#f1f5f9', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}
+                              formatter={(value, name) => [name === 'hours' ? `${value.toFixed(1)} hours` : `${value} tasks`, name === 'hours' ? '⏱️ Hours' : '📋 Tasks']}
+                              labelFormatter={(label, payload) => payload[0]?.payload?.fullName || label}
+                              cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
+                            />
+                            <Bar dataKey="hours" name="hours" radius={[0, 8, 8, 0]} barSize={28}>
+                              {workloadData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="no-data">No data matches your filters</div>
+                      )}
+                    </div>
+                    <div className="chart-legend">
+                      <span className="legend-item"><span className="legend-dot" style={{background: '#06b6d4'}}></span>Hours Logged</span>
+                    </div>
+                  </div>
+
+                  <div className="card">
+                    <h3 className="card-title">📝 Tasks <span className="task-count">{filteredTasks.length}</span></h3>
+                    
+                    {pieData.length > 0 && (
+                      <div className="pie-section">
+                        <div className="pie-container">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={3} dataKey="value">
+                                {pieData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <div className="pie-legend">
+                          {pieData.map((item, i) => (
+                            <div key={i} className="pie-legend-item">
+                              <span className="pie-legend-dot" style={{background: item.color}}></span>
+                              {item.name}: {item.value}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="task-list">
+                      {filteredTasks.slice(0, 15).map((task) => {
+                        const isOverdue = task['due-date'] && !task.completed && new Date(task['due-date'].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) < new Date();
+                        return (
+                          <div key={task.id} className="task-item">
+                            <div className="task-header">
+                              <span className={`task-status ${task.completed ? 'complete' : isOverdue ? 'overdue' : 'active'}`}>
+                                {task.completed ? '✓' : isOverdue ? '!' : '○'}
+                              </span>
+                              <span className="task-name">{task.content}</span>
+                            </div>
+                            <div className="task-meta">
+                              <span className="task-project">{task['project-name']}</span>
+                              {task['responsible-party-summary'] && <span className="task-assignee">👤 {task['responsible-party-summary']}</span>}
+                              {task['due-date'] && <span className="task-due">📅 {task['due-date'].replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')}</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {filteredTasks.length === 0 && <div className="no-data">No tasks match your filters</div>}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
 
             <footer className="footer">
               <p>Connected to <span>9cloudwebworks.teamwork.com</span> {lastUpdated && <> • Last updated: {lastUpdated.toLocaleString()}</>}</p>
