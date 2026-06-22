@@ -111,7 +111,7 @@
 
     /* Charts */
     .charts-row {
-      display: grid; grid-template-columns: 1fr; gap: 16px;
+      display: grid; grid-template-columns: 1fr 320px; gap: 16px;
       margin-bottom: 24px;
     }
     .chart-card {
@@ -158,8 +158,6 @@
     .task-status-icon.overdue { background: rgba(239,68,68,0.15); color: #ef4444; }
     .task-status-icon.active { background: rgba(6,182,212,0.15); color: #06b6d4; }
     .task-name { font-size: 13px; font-weight: 500; }
-    .task-link { color: inherit; text-decoration: none; cursor: pointer; }
-    .task-link:hover { color: #06b6d4; text-decoration: underline; }
     .task-meta {
       display: flex; gap: 12px; margin-top: 4px; margin-left: 32px;
       font-size: 11px; color: #64748b; flex-wrap: wrap;
@@ -212,7 +210,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/prop-types@15/prop-types.min.js"></script>
   <script crossorigin src="https://unpkg.com/recharts@2.1.16/umd/Recharts.js"></script>
-  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
 
   <script type="text/babel">
     const { useState, useEffect, useMemo, useCallback } = React;
@@ -286,7 +284,6 @@
       const [selectedProject, setSelectedProject] = useState('all');
       const [selectedStaff, setSelectedStaff] = useState('all');
       const [dateRange, setDateRange] = useState({ start: '', end: '' });
-      const [workloadDateRange, setWorkloadDateRange] = useState({ start: '', end: '' });
 
       const fetchData = useCallback(async () => {
         setLoading(true);
@@ -380,29 +377,6 @@
         });
       }, [timeEntries, selectedProject, selectedStaff, dateRange]);
 
-      // Workload chart uses its OWN date range based on actual time entry dates
-      const workloadTimeEntries = useMemo(() => {
-        return timeEntries.filter(entry => {
-          if (selectedProject !== 'all' && String(entry['project-id']) !== selectedProject) return false;
-          if (selectedStaff !== 'all' && String(entry['person-id']) !== selectedStaff) return false;
-          if (workloadDateRange.start && entry.date && new Date(entry.date) < new Date(workloadDateRange.start)) return false;
-          if (workloadDateRange.end && entry.date && new Date(entry.date) > new Date(workloadDateRange.end + 'T23:59:59')) return false;
-          return true;
-        });
-      }, [timeEntries, selectedProject, selectedStaff, workloadDateRange]);
-
-      // Workload chart tasks: respect project/staff filters but ignore due-date range (the workload date filter is about actual hours logged)
-      const workloadTasks = useMemo(() => {
-        return tasks.filter(task => {
-          if (selectedProject !== 'all' && String(task['project-id']) !== selectedProject) return false;
-          if (selectedStaff !== 'all') {
-            const ids = (task['responsible-party-ids'] || '').split(',');
-            if (!ids.includes(selectedStaff)) return false;
-          }
-          return true;
-        });
-      }, [tasks, selectedProject, selectedStaff]);
-
       // Stats
       const stats = useMemo(() => {
         const total = filteredTasks.length;
@@ -417,11 +391,6 @@
         return { total, completed, active, overdue, totalHours };
       }, [filteredTasks, filteredTimeEntries]);
 
-      // Hours total for Workload section (follows the Workload date filter)
-      const workloadTotalHours = useMemo(() => {
-        return workloadTimeEntries.reduce((sum, e) => sum + (parseFloat(e.hoursDecimal) || 0), 0);
-      }, [workloadTimeEntries]);
-
       // Workload Chart Data
       const workloadData = useMemo(() => {
         if (viewMode === 'staff') {
@@ -433,12 +402,12 @@
               tasks: 0, hours: 0,
             };
           });
-          workloadTasks.forEach(task => {
+          filteredTasks.forEach(task => {
             (task['responsible-party-ids'] || '').split(',').forEach(id => {
               if (map[id]) map[id].tasks++;
             });
           });
-          workloadTimeEntries.forEach(entry => {
+          filteredTimeEntries.forEach(entry => {
             const pid = String(entry['person-id']);
             if (map[pid]) map[pid].hours += parseFloat(entry.hoursDecimal) || 0;
           });
@@ -455,11 +424,11 @@
               tasks: 0, hours: 0,
             };
           });
-          workloadTasks.forEach(task => {
+          filteredTasks.forEach(task => {
             const pid = String(task['project-id']);
             if (map[pid]) map[pid].tasks++;
           });
-          workloadTimeEntries.forEach(entry => {
+          filteredTimeEntries.forEach(entry => {
             const pid = String(entry['project-id']);
             if (map[pid]) map[pid].hours += parseFloat(entry.hoursDecimal) || 0;
           });
@@ -468,7 +437,7 @@
             .sort((a, b) => b.hours - a.hours)
             .map(d => ({ ...d, hours: Math.round(d.hours * 10) / 10 }));
         }
-      }, [viewMode, activeStaff, projects, workloadTasks, workloadTimeEntries]);
+      }, [viewMode, activeStaff, projects, filteredTasks, filteredTimeEntries]);
 
       // Pie Data
       const pieData = useMemo(() => {
@@ -631,56 +600,9 @@
                   <div className="stat-value red">{stats.overdue}</div>
                   <div className="stat-label">Overdue</div>
                 </div>
-              </div>
-
-              {/* Charts */}
-              <div className="charts-row">
-                <div className="chart-card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-                    <div>
-                      <div className="chart-title">
-                        {viewMode === 'staff' ? 'Workload by Staff' : 'Workload by Project'}
-                      </div>
-                      <div className="chart-subtitle">Hours logged</div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div className="stat-value purple" style={{ fontSize: 24 }}>{workloadTotalHours.toFixed(1)}h</div>
-                      <div className="stat-label">Hours Logged</div>
-                    </div>
-                  </div>
-
-                  {/* Workload-only date filter (based on actual time entry dates) */}
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    <div className="filter-group">
-                      <label className="filter-label">Hours Logged From</label>
-                      <input type="date" value={workloadDateRange.start}
-                        onChange={e => setWorkloadDateRange(prev => ({ ...prev, start: e.target.value }))} />
-                    </div>
-                    <div className="filter-group">
-                      <label className="filter-label">Hours Logged To</label>
-                      <input type="date" value={workloadDateRange.end}
-                        onChange={e => setWorkloadDateRange(prev => ({ ...prev, end: e.target.value }))} />
-                    </div>
-                    {(workloadDateRange.start || workloadDateRange.end) && (
-                      <button className="filter-reset" onClick={() => setWorkloadDateRange({ start: '', end: '' })}>
-                        ✕ Clear
-                      </button>
-                    )}
-                  </div>
-
-                  {workloadData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={Math.max(280, workloadData.length * 40)}>
-                      <BarChart data={workloadData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
-                        <XAxis type="number" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <YAxis type="category" dataKey="name" width={120}
-                          tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(6,182,212,0.06)' }} />
-                        <Bar dataKey="hours" name="Hours" fill="#8b5cf6" radius={[0, 4, 4, 0]} barSize={22} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="no-data">No data to display</div>
-                  )}
+                <div className="stat-card">
+                  <div className="stat-value purple">{stats.totalHours.toFixed(1)}h</div>
+                  <div className="stat-label">Hours Logged</div>
                 </div>
               </div>
 
@@ -700,11 +622,7 @@
                           <span className={`task-status-icon ${status}`}>
                             {status === 'complete' ? '✓' : status === 'overdue' ? '!' : '○'}
                           </span>
-                          <a className="task-name task-link"
-                            href={`https://9cloudwebworks.teamwork.com/app/tasks/${task.id}`}
-                            target="_blank" rel="noopener noreferrer">
-                            {task.content}
-                          </a>
+                          <span className="task-name">{task.content}</span>
                         </div>
                         <div className="task-meta">
                           <span>📁 {task['project-name']}</span>
@@ -721,6 +639,61 @@
                     );
                   }) : (
                     <div className="no-data">No tasks match your filters</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Charts */}
+              <div className="charts-row">
+                <div className="chart-card">
+                  <div className="chart-title">
+                    {viewMode === 'staff' ? 'Workload by Staff' : 'Workload by Project'}
+                  </div>
+                  <div className="chart-subtitle">Tasks & hours logged</div>
+                  {workloadData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={Math.max(280, workloadData.length * 44)}>
+                      <BarChart data={workloadData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+                        <XAxis type="number" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <YAxis type="category" dataKey="name" width={120}
+                          tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(6,182,212,0.06)' }} />
+                        <Bar dataKey="hours" name="Hours" fill="#8b5cf6" radius={[0, 4, 4, 0]} barSize={16} />
+                        <Bar dataKey="tasks" name="Tasks" fill="#06b6d4" radius={[0, 4, 4, 0]} barSize={16} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="no-data">No data to display</div>
+                  )}
+                </div>
+
+                <div className="chart-card">
+                  <div className="chart-title">Task Status</div>
+                  <div className="chart-subtitle">Overall breakdown</div>
+                  {pieData.length > 0 ? (
+                    <>
+                      <ResponsiveContainer width="100%" height={220}>
+                        <PieChart>
+                          <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={85}
+                            paddingAngle={3} dataKey="value">
+                            {pieData.map((entry, i) => (
+                              <Cell key={i} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                          <Tooltip content={<CustomTooltip />} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 4 }}>
+                        {pieData.map(d => (
+                          <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: d.fill, display: 'inline-block' }} />
+                            <span style={{ color: '#94a3b8' }}>{d.name}</span>
+                            <span style={{ fontWeight: 600 }}>{d.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="no-data">No data to display</div>
                   )}
                 </div>
               </div>
